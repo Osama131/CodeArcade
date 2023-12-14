@@ -2,7 +2,7 @@
 
 This is a simple implementation of the classic Pong game using Python and the Pygame library.
 
-**For the challenges for this game check the Challenges.md file in gitlab.**
+**For the challenges for this game check the [Challenges.md](Challenges.md) file in gitlab.**
 
 
 ## Features
