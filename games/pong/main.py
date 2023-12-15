@@ -179,6 +179,7 @@ CLOCK = pygame.time.Clock()
 BACKGROUND_COLOR = (37, 37, 38)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 WINDOW_WIDTH = 950
 WINDOW_HEIGHT = 600
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -290,10 +291,25 @@ while running:
 
     if is_game_over:
         is_playing = False
-        game_over_text = SCORE_FONT.render("Game Over", False, WHITE, BACKGROUND_COLOR)
-        WINDOW.blit(game_over_text, (WINDOW_WIDTH/2-20, WINDOW_HEIGHT/16))
+
+        game_over_text = SCORE_FONT.render("Game Over", False, RED, BACKGROUND_COLOR)
+        WINDOW.blit(game_over_text, (WINDOW_WIDTH/2-60, WINDOW_HEIGHT/16)) 
         WINDOW.blit(GAME_NAME, (WINDOW_WIDTH//2 - GAME_NAME.get_width() // 2, 100))
         WINDOW.blit(START_PROMPT, (WINDOW_WIDTH//2 - START_PROMPT.get_width() // 2, 500))
+
+        if player_left_score > player_right_score:
+            winner_text = SCORE_FONT.render(player_left_name + " has won!", False, WHITE, BACKGROUND_COLOR)
+            winner_text_width = winner_text.get_width() 
+            WINDOW.blit(winner_text, (WINDOW_WIDTH/2 - winner_text_width/2, WINDOW_HEIGHT/2)) 
+        elif player_left_score < player_right_score: 
+            winner_text = SCORE_FONT.render(player_right_name + " has won!", False, WHITE, BACKGROUND_COLOR)
+            winner_text_width = winner_text.get_width() 
+            WINDOW.blit(winner_text, (WINDOW_WIDTH/2-winner_text_width/2, WINDOW_HEIGHT/2)) 
+        else:
+            draw_text = SCORE_FONT.render("Draw!", False, WHITE, BACKGROUND_COLOR)
+            draw_text_width = draw_text.get_width()
+            WINDOW.blit(draw_text, (WINDOW_WIDTH/2-draw_text_width/2, WINDOW_HEIGHT/2)) 
+        
 
     elif is_playing:
         # Drawing and coloring the rectangles and the ball as a ellipse, and the middle line
@@ -333,10 +349,11 @@ while running:
     # TASK 3.2 - Announce the winner
     # TASK 3.3 - Add a game over display and possibility to restart the game
 
-    timer_text = SCORE_FONT.render(f"{timer_wert}", False, WHITE, BACKGROUND_COLOR)
-    WINDOW.blit(timer_text, (WINDOW_WIDTH/2-20, WINDOW_HEIGHT/16))
+    
     
     if is_playing:
+        timer_text = SCORE_FONT.render(f"{timer_wert}", False, WHITE, BACKGROUND_COLOR)
+        WINDOW.blit(timer_text, (WINDOW_WIDTH/2-20, WINDOW_HEIGHT/16))
         timer_temp += 1
         if timer_temp == 60 and timer_wert >0:
             timer_wert -= 1
