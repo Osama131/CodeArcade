@@ -14,7 +14,7 @@ class PillManager:
         if pill_to_eat is None: return # pill has already been eaten
         else:
             self.game.current_score().add_points_for("pill")
-        pill_to_eat.sprite.kill()
+        pill_to_eat.sprite.kill(self.game.ghosts)
         del self.pill_array[pill_index]
 
     def init_pills(self):
