@@ -195,6 +195,9 @@ player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
 ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randint(5, 10)))
 
+timer_wert = 100 
+timer_temp = 0
+
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
 START_PROMPT = SCORE_FONT.render(f'Press Enter To Start', False, WHITE)
@@ -295,6 +298,15 @@ while running:
     # TASK 3.1 - Make the game end
     # TASK 3.2 - Announce the winner
     # TASK 3.3 - Add a game over display and possibility to restart the game
+
+    timer_text = SCORE_FONT.render(f"{timer_wert}", False, WHITE, BACKGROUND_COLOR)
+    WINDOW.blit(timer_text, (WINDOW_WIDTH/2-20, WINDOW_HEIGHT/16))
+    
+    timer_temp += 1
+    if timer_temp == 60:
+        timer_wert -= 1
+        timer_temp = 0
+
 
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
