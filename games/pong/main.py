@@ -166,21 +166,41 @@ def show_go_screen(right_win):
                     is_playing = True
                     is_score_saved = False
                     is_game_over = False
-        
-
-        #self.clock.tick(FPS)
 
 # TASK 4 - Scoring System
 # TASK 4.1 - Implement saving, loading and updating functions
 # TASK 4.2/4.3 - End the game based on the score or based on the time played
 
 def load_scores():
+
     pass
 
-def save_scores():
+def save_scores(right_win):
+    f = open("scores.txt", "a+")
+    s = f.read()
+    results = s.split(';')
+    print(results)
+    for i in range(len(results)):  
+        if player_left_name == results[i] and not right_win and results[i+1] < player_left_score:
+            update_scores(i, player_left_score, results)
+        elif not right_win:
+            f.write(player_left_name + ';' + str(player_left_score) + ';' )
+
+        if player_right_name == results[i] and right_win and results[i+1] < player_right_score:
+            update_scores(i, player_left_score, results)
+        elif right_win:
+            f.write(player_right_name + ';' + str(player_right_score) + ';' )
+    f.close()
+            
     pass
 
-def update_scores():
+def update_scores(i, player_score, results):
+    f = open("scores.txt", "w").close()
+    f = open("scores.txt","a")
+    results[i+1] = player_score
+    for i in range(len(results)):
+        f.write(results[i] + ';')
+    f.close()
     pass
 
 
@@ -334,9 +354,11 @@ while running:
         is_game_over = True
         is_playing = False
         right_win = player_right_score > player_left_score
+        save_scores(right_win)
         player_right_score = 0 
         player_left_score = 0
         show_go_screen(right_win)
+
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
     create_crt_lines()
