@@ -143,19 +143,28 @@ def get_player_name(text, player_number):
 
     return text
 
-def show_go_screen():
-    global is_playing, is_game_over
+def show_go_screen(right_win):
+    global is_playing, is_game_over, is_reset, player_left_name, player_right_name, is_score_saved
     WINDOW.fill(BLACK)
-    text_surface = SCORE_FONT.render("Press space bar to play again", True, WHITE)
-    WINDOW.blit(text_surface, (WINDOW_WIDTH // 2 - text_surface.get_width(), 380))
+    if right_win:
+        text1_surface = SCORE_FONT.render(player_right_name + " WON", True, WHITE)
+        WINDOW.blit(text1_surface, (WINDOW_WIDTH // 2 - text1_surface.get_width()//2, WINDOW_HEIGHT // 2 - text1_surface.get_height()//2))
+    else:
+        text2_surface = SCORE_FONT.render(player_left_name + " WON", True, WHITE)
+        WINDOW.blit(text2_surface, (WINDOW_WIDTH // 2 - text2_surface.get_width()//2, WINDOW_HEIGHT // 2 - text2_surface.get_height()//2))
+    text3_surface = SCORE_FONT.render("Press space bar to play again", True, WHITE)
+    WINDOW.blit(text3_surface, (WINDOW_WIDTH // 2 - text3_surface.get_width()//2, 380))
     pygame.display.flip()
     while is_game_over:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                is_playing = False
-                is_game_over = True
+            if event.type == pygame.KEYDOWN:  # If the key is escape
+                if event.key == pygame.K_ESCAPE: 
+                    pygame.quit()
+                    quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE and (is_playing == False):
+                    is_playing = True
+                    is_score_saved = False
                     is_game_over = False
         
 
@@ -323,7 +332,11 @@ while running:
 
     if player_right_score == 1 or player_left_score == 1:
         is_game_over = True
-        show_go_screen()
+        is_playing = False
+        right_win = player_right_score > player_left_score
+        player_right_score = 0 
+        player_left_score = 0
+        show_go_screen(right_win)
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
     create_crt_lines()
