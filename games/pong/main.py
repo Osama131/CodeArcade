@@ -211,7 +211,7 @@ player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
 ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randint(5, 10)))
 
-timer_wert = 100 
+timer_wert = 10
 timer_temp = 0
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
@@ -235,15 +235,23 @@ while running:
 
         # Start the game if enter is pressed
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN and (is_playing == False):
-                is_playing = True
-                is_score_saved = False
+            if event.key == pygame.K_RETURN and not is_playing:
+                #is in main menu
+                if not is_game_over:
+                    is_playing = True
+                    is_score_saved = False
+                #is in game over screen
+                else:
+                    is_game_over = False
+                    timer_wert = 100
 
         # Reset the game if space is pressed
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and is_playing and is_reset:
                 is_reset = False
                 pygame.time.set_timer(SPEED_UP_BALL_EVENT, 30000)
+
+        
 
         # TASK 1 - Player Right Movement
         # TASK 1.1 - Help Player right to move
@@ -280,7 +288,14 @@ while running:
 
     WINDOW.fill(BACKGROUND_COLOR)
 
-    if is_playing:
+    if is_game_over:
+        is_playing = False
+        game_over_text = SCORE_FONT.render("Game Over", False, WHITE, BACKGROUND_COLOR)
+        WINDOW.blit(game_over_text, (WINDOW_WIDTH/2-20, WINDOW_HEIGHT/16))
+        WINDOW.blit(GAME_NAME, (WINDOW_WIDTH//2 - GAME_NAME.get_width() // 2, 100))
+        WINDOW.blit(START_PROMPT, (WINDOW_WIDTH//2 - START_PROMPT.get_width() // 2, 500))
+
+    elif is_playing:
         # Drawing and coloring the rectangles and the ball as a ellipse, and the middle line
         pygame.draw.rect(WINDOW, WHITE, player_left)
         pygame.draw.rect(WINDOW, WHITE, player_right)
@@ -301,6 +316,7 @@ while running:
             reset_text = SCORE_FONT.render(f'Press Space', False, WHITE)
             WINDOW.blit(reset_text, (WINDOW_WIDTH//2 -
                         reset_text.get_width() // 2, 240))
+
     else:
         # Drawing the start screen
         instructions_left = SCORE_FONT.render(f'Left Player   =   W  &  S  Key', False, WHITE)
@@ -309,6 +325,8 @@ while running:
         WINDOW.blit(instructions_left, (WINDOW_WIDTH//2 - instructions_left.get_width() // 2, 280))
         WINDOW.blit(instructions_right, (WINDOW_WIDTH//2 - instructions_right.get_width() // 2, 340))
         WINDOW.blit(START_PROMPT, (WINDOW_WIDTH//2 - START_PROMPT.get_width() // 2, 500))
+    
+    
 
     # TASK 3 - Game Over
     # TASK 3.1 - Make the game end
@@ -318,11 +336,14 @@ while running:
     timer_text = SCORE_FONT.render(f"{timer_wert}", False, WHITE, BACKGROUND_COLOR)
     WINDOW.blit(timer_text, (WINDOW_WIDTH/2-20, WINDOW_HEIGHT/16))
     
-    timer_temp += 1
-    if timer_temp == 60:
-        timer_wert -= 1
-        timer_temp = 0
-
+    if is_playing:
+        timer_temp += 1
+        if timer_temp == 60 and timer_wert >0:
+            timer_wert -= 1
+            timer_temp = 0
+    
+    if(timer_wert <= 0):
+        is_game_over = True
 
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
