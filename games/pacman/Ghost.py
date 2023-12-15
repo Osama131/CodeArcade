@@ -129,9 +129,9 @@ class Ghost(Character):
                 new_pos = blinky_vec + dist_vec * 2
                 return self.get_direction_closest_to_target(directions_without_walls, tuple(new_pos))
         # CHALLENGE 3.2 this should be called when the ghost is dead:
-        self.die()
-        '''target_coords = (13 * TILE_SIZE + TILE_SIZE // 2, TOP_OFFSET + 11 * TILE_SIZE + TILE_SIZE // 2)
-        return self.get_direction_closest_to_target(directions_without_walls, target_coords)'''
+        if self.cur_mode == "dead":
+            target_coords = (13 * TILE_SIZE + TILE_SIZE // 2, TOP_OFFSET + 11 * TILE_SIZE + TILE_SIZE // 2)
+            return self.get_direction_closest_to_target(directions_without_walls, target_coords)
 
     def get_tile_in_front_of_pacman(self, number_of_tiles):
         pacman_direction = DIRECTIONS[self.game.pacman.direction]
