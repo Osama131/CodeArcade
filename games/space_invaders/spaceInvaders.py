@@ -77,7 +77,7 @@ class SpaceInvaders(object):
             # TASK 2.1 - Generate 2 types of enemies
             rank = random.randint(0, 1)
             enemy = Enemy(
-                self.enemy_spritesheet, (enemy_x, enemy_y), (screen_width, screen_height))
+                self.enemy_spritesheet, (enemy_x, enemy_y), (screen_width, screen_height), rank, level)
             self.enemies.add(enemy)
 
     def display_score(self):
