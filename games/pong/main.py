@@ -9,6 +9,7 @@ pygame.init()
 # TASK 2.2 - Bounce off the top and bottom of the window
 def bounce_off_rectangle(rectangle):
     global ball_speed_x
+    global ball_speed_y
     HIT_SOUND.play()
 
     ball_speed_x *= -1
@@ -17,8 +18,10 @@ def bounce_off_rectangle(rectangle):
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
 def ball_bounce():
     global ball_speed_x
+    global ball_speed_y
     if is_playing and not is_reset:
         ball.x += ball_speed_x
+        ball.y += ball_speed_y
 
     if ball.colliderect(player_left):
         bounce_off_rectangle(player_left)
@@ -28,6 +31,12 @@ def ball_bounce():
     elif ball.colliderect(player_right):
         bounce_off_rectangle(player_right)
         ball.right = player_right.left
+        
+    elif ball.y >= WINDOW_HEIGHT-30:
+        ball_speed_y *= -1
+        
+    elif ball.y <= 0:
+        ball_speed_y *= -1
 
 
 # Checks if the ball goes beyond the bound and resets the pos and adds a point to the player
@@ -55,9 +64,10 @@ def scoring():
 
 # Resets the ball to the center and stops the movement and randomizes the movement
 def ball_reset():
-    global ball_speed_x, is_reset, is_playing
+    global ball_speed_x, ball_speed_y, is_reset, is_playing
     ball.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
     ball_speed_x = 6 * random.choice((1, -1))
+    ball_speed_y = 6 * random.choice((1, -1))
     is_reset = True
 
 
@@ -190,6 +200,7 @@ player_left_score = 0
 player_right_score = 0
 player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
+ball_speed_y = 6 * random.choice((1, -1))
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
