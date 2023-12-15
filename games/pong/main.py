@@ -143,6 +143,24 @@ def get_player_name(text, player_number):
 
     return text
 
+def show_go_screen():
+    global is_playing, is_game_over
+    WINDOW.fill(BLACK)
+    text_surface = SCORE_FONT.render("Press space bar to play again", True, WHITE)
+    WINDOW.blit(text_surface, (WINDOW_WIDTH // 2 - text_surface.get_width(), 380))
+    pygame.display.flip()
+    while is_game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                is_playing = False
+                is_game_over = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    is_game_over = False
+        
+
+        #self.clock.tick(FPS)
+
 # TASK 4 - Scoring System
 # TASK 4.1 - Implement saving, loading and updating functions
 # TASK 4.2/4.3 - End the game based on the score or based on the time played
@@ -303,6 +321,9 @@ while running:
     # TASK 3.2 - Announce the winner
     # TASK 3.3 - Add a game over display and possibility to restart the game
 
+    if player_right_score == 1 or player_left_score == 1:
+        is_game_over = True
+        show_go_screen()
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
     create_crt_lines()
