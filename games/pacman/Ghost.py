@@ -99,6 +99,7 @@ class Ghost(Character):
         self.previous_mode = self.cur_mode
         self.change_mode("scared")
         self.start_time = time.time()
+        self.die()
         # CHALLENGE 8 the ghosts should change their direction to the opposite
 
     def get_new_direction_for_intersection(self, possible_directions):
