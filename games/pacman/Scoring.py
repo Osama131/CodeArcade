@@ -37,7 +37,7 @@ class Scoring(Sprite):
         # use eaten to decide how many points to add
         if(eaten == "pill"):
             self.score += 10
-        elif(eaten == "ghost"):
+        elif(eaten == "ghost") :
             self.score += 200
         elif(eaten == "energizer"):
             self.score += 50
