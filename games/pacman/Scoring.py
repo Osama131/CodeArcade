@@ -45,7 +45,5 @@ class Scoring(Sprite):
             self.score += 100
         elif(eaten == "strawberry"):
             self.score += 300
-        elif (eaten == "greeen"):
-            self.score += 300
         self.display_score()
 
