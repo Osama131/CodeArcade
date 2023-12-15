@@ -13,7 +13,7 @@ class PillManager:
         # CHALLENGE 3.1 differentiate between an energizer and a normal pill
         if pill_to_eat is None: return # pill has already been eaten
         else:
-            if self.pill_array[pill_index]:
+            if pill_to_eat.is_energizer:
                 self.game.current_score().add_points_for("energizer")
             else:
                 self.game.current_score().add_points_for("pill")
