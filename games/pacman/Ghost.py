@@ -99,7 +99,7 @@ class Ghost(Character):
         self.previous_mode = self.cur_mode
         self.change_mode("scared")
         self.start_time = time.time()
-        self.die()
+
         # CHALLENGE 8 the ghosts should change their direction to the opposite
 
     def get_new_direction_for_intersection(self, possible_directions):
@@ -129,6 +129,7 @@ class Ghost(Character):
                 new_pos = blinky_vec + dist_vec * 2
                 return self.get_direction_closest_to_target(directions_without_walls, tuple(new_pos))
         # CHALLENGE 3.2 this should be called when the ghost is dead:
+        self.die()
         '''target_coords = (13 * TILE_SIZE + TILE_SIZE // 2, TOP_OFFSET + 11 * TILE_SIZE + TILE_SIZE // 2)
         return self.get_direction_closest_to_target(directions_without_walls, target_coords)'''
 
