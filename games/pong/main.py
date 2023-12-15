@@ -155,14 +155,41 @@ def get_player_name(text, player_number):
 # TASK 4.2/4.3 - End the game based on the score or based on the time played
 
 def load_scores():
-    pass
+    global highscores
+    scores = open(SCORE_FILE, "r").read()
+    scorelines = scores.split("\n")
+    for line in scorelines:
+        split = line.split(" ", 1)
+        if(split != []):
+            print(split)
+            score = split[0]
+            name = split[1]
+            highscores.append([name, score])
 
 def save_scores():
-    pass
+    global highscores
+    text_to_write = ""
+    for i in range(len(highscores)):
+        s = highscores[i]
+        text_to_write += str(s[1]) + " " + str(s[0])
+        if(not i == len(highscores) - 1):
+            text_to_write += "\n"
+    text_to_write.removesuffix("\n")
+    open(SCORE_FILE, "w").write(text_to_write)
 
 def update_scores():
-    pass
+    global player_left_score, player_right_score, is_score_saved, highscores
+    is_score_saved = True
+    
+    highscores.append([player_left_name, player_left_score])
+    highscores.append([player_right_name, player_right_score])
+    highscores.sort(key=compare_player, reverse=True)
+    save_scores()
+    print(highscores)
+    print(is_score_saved)
 
+def compare_player(p):
+    return int(p[1])
 
 # Creates the crt lines depending on the window size
 def create_crt_lines():
@@ -215,6 +242,8 @@ ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randin
 timer_wert = 10
 timer_temp = 0
 
+highscores = []
+
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
 START_PROMPT = SCORE_FONT.render(f'Press Enter To Start', False, WHITE)
@@ -223,6 +252,7 @@ INPUT_BOX = pygame.Rect(WINDOW_WIDTH/2-150, WINDOW_HEIGHT/2-25, 300, 50)
 
 # Main loop
 running = True
+load_scores()
 player_left_name = get_player_name("", "Player 1")
 player_right_name = get_player_name("", "Player 2")
 while running:
@@ -287,15 +317,30 @@ while running:
     player_left.y += player_left_speed
     player_right.y += player_right_speed
 
+    if is_game_over and not is_score_saved:
+        update_scores()
+
     WINDOW.fill(BACKGROUND_COLOR)
 
+   
     if is_game_over:
+        # Draw game over screen
         is_playing = False
 
         game_over_text = SCORE_FONT.render("Game Over", False, RED, BACKGROUND_COLOR)
         WINDOW.blit(game_over_text, (WINDOW_WIDTH/2-60, WINDOW_HEIGHT/16)) 
         WINDOW.blit(GAME_NAME, (WINDOW_WIDTH//2 - GAME_NAME.get_width() // 2, 100))
         WINDOW.blit(START_PROMPT, (WINDOW_WIDTH//2 - START_PROMPT.get_width() // 2, 500))
+
+        #highscores
+        highscores_textfeld = SCORE_FONT.render("HIGHSCORES:", False, WHITE, BACKGROUND_COLOR)
+        WINDOW.blit(highscores_textfeld, (WINDOW_WIDTH/12, (WINDOW_HEIGHT/8) - 40))
+        i = 0
+        for s in highscores:
+            i += 1
+            text = str(s[1]) + "    " + str(s[0])
+            textfeld = SCORE_FONT.render(text, False, WHITE, BACKGROUND_COLOR)
+            WINDOW.blit(textfeld, (WINDOW_WIDTH/8, (WINDOW_HEIGHT/8) + i * 30))
 
         if player_left_score > player_right_score:
             winner_text = SCORE_FONT.render(player_left_name + " has won!", False, WHITE, BACKGROUND_COLOR)
