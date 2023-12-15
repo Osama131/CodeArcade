@@ -64,9 +64,11 @@ def ball_reset():
 # Resets the players to the startingpositions and stops the movement
 def players_reset():
     global player_left_speed #player_right_speed
+    global player_right_speed
     player_left.midleft = (10, WINDOW_HEIGHT/2)
     player_right.midright = (WINDOW_WIDTH-10, WINDOW_HEIGHT/2)
     player_left_speed = 0
+    player_right_speed = 0
 
 
 # Checks if the players goes beyond the bound and resets the pos
@@ -186,6 +188,7 @@ is_score_saved = False
 player_left_speed = 0
 player_left_score = 0
 player_right_score = 0
+player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
@@ -224,12 +227,21 @@ while running:
         # Check if the player presses the keys and move the players
         pressed_keys = pygame.key.get_pressed()
         if is_playing and not is_reset:
+            #Player Left
             if pressed_keys[pygame.K_w] and not pressed_keys[pygame.K_s]:
                 player_left_speed = -7
             elif pressed_keys[pygame.K_s] and not pressed_keys[pygame.K_w]:
                 player_left_speed = 7
             else:
                 player_left_speed = 0
+            #Player Right
+            if pressed_keys[pygame.K_UP] and not pressed_keys[pygame.K_DOWN]:
+                player_right_speed = -7
+            elif pressed_keys[pygame.K_DOWN] and not pressed_keys[pygame.K_UP]:
+                player_right_speed = 7
+            else:
+                player_right_speed = 0
+            
 
         if event.type == SPEED_UP_BALL_EVENT and is_playing and not is_reset:
             ball_speed_x *= 1.2
@@ -241,6 +253,7 @@ while running:
 
     # Updating the player movement
     player_left.y += player_left_speed
+    player_right.y += player_right_speed
 
     WINDOW.fill(BACKGROUND_COLOR)
 
