@@ -8,10 +8,19 @@ pygame.init()
 # TASK 2.1 - Make ball move in different ways
 # TASK 2.2 - Bounce off the top and bottom of the window
 def bounce_off_rectangle(rectangle):
-    global ball_speed_x
+    global ball_speed_x, ball_speed_y
     HIT_SOUND.play()
 
-    ball_speed_x *= -1
+    if(rectangle == wall_top or rectangle == wall_bottom): 
+        ball_speed_y *= -1
+
+    elif(rectangle == player_left):
+        ball_speed_x *= -1
+        ball_speed_y = ball_speed_y + (player_left_speed / 4)
+
+    elif(rectangle == player_right):
+        ball_speed_x *= -1
+        ball_speed_y = ball_speed_y + (player_right_speed / 4)
 
 
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
@@ -20,7 +29,6 @@ def ball_bounce():
     if is_playing and not is_reset:
         ball.x += ball_speed_x
         ball.y += ball_speed_y
-        print(ball_speed_y)
 
     if ball.colliderect(player_left):
         bounce_off_rectangle(player_left)
@@ -30,6 +38,12 @@ def ball_bounce():
     elif ball.colliderect(player_right):
         bounce_off_rectangle(player_right)
         ball.right = player_right.left
+
+    elif ball.colliderect(wall_top):
+        bounce_off_rectangle(wall_top)
+    
+    elif ball.colliderect(wall_bottom):
+        bounce_off_rectangle(wall_bottom)
 
 
 # Checks if the ball goes beyond the bound and resets the pos and adds a point to the player
@@ -174,6 +188,8 @@ pygame.display.set_caption("Pong")
 ball = pygame.Rect(WINDOW_WIDTH/2-11, WINDOW_HEIGHT/2-11, 22, 22)
 player_left = pygame.Rect(10, WINDOW_HEIGHT/2-45, 20, 90)
 player_right = pygame.Rect(WINDOW_WIDTH-30, WINDOW_HEIGHT/2-45, 20, 90)
+wall_top = pygame.Rect(0, 0, WINDOW_WIDTH, 1)
+wall_bottom = pygame.Rect(0, WINDOW_HEIGHT, WINDOW_WIDTH, 1)
 
 CRT_IMAGE = pygame.image.load('graphics/crt.png').convert_alpha()
 CRT_IMAGE = pygame.transform.scale(CRT_IMAGE, (WINDOW_WIDTH, WINDOW_HEIGHT))
