@@ -60,7 +60,7 @@ def ball_reset():
     global ball_speed_x, is_reset, is_playing, ball_speed_y
     ball.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
     ball_speed_x = 6 * random.choice((1, -1))
-    ball_speed_y = 0.1 * random.randint(-10, 10)
+    ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randint(5, 10)))
     is_reset = True
 
 
@@ -193,7 +193,7 @@ player_left_score = 0
 player_right_score = 0
 player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
-ball_speed_y = 0.1 * random.randint(-10, 10)
+ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randint(5, 10)))
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
