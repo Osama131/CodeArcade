@@ -35,5 +35,15 @@ class Scoring(Sprite):
     def add_points_for(self, eaten: str):
         # CHALLENGE 2
         # use eaten to decide how many points to add
+        if(eaten == "pill"):
+            self.score += 10
+        elif(eaten == "ghost"):
+            self.score += 200
+        elif(eaten == "energizer"):
+            self.score += 50
+        elif(eaten == "cherry"):
+            self.score += 100
+        elif(eaten == "strawberry"):
+            self.score += 300
         self.display_score()
 
