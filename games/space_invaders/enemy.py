@@ -42,5 +42,15 @@ class Enemy(pygame.sprite.Sprite):
     def set_explosion_sound(self, sound):
         self.explosion_sound = sound
 
+    def hit(self):
+        self.health -= 1
+        if self.health <= 0:
+            self.kill()
+            self.dead = True
+            self.explosion_sound.play()
+            self.image = self.explosion_images[0]
+            self.rect = self.image.get_rect()
+            self.rect.center = self.get_position()
+
 # TASK 5 - Add special enemy - Boss
 # Boss should look bigger than normal enemies, move faster and have more health

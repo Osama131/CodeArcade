@@ -16,11 +16,11 @@ def bounce_off_rectangle(rectangle):
 
     elif(rectangle == player_left):
         ball_speed_x *= -1
-        ball_speed_y = ball_speed_y + (player_left_speed / 4)
+        ball_speed_y = ball_speed_y + (player_left_speed )
 
     elif(rectangle == player_right):
         ball_speed_x *= -1
-        ball_speed_y = ball_speed_y + (player_right_speed / 4)
+        ball_speed_y = ball_speed_y + (player_right_speed )
 
 
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
@@ -45,6 +45,17 @@ def ball_bounce():
     elif ball.colliderect(wall_bottom):
         bounce_off_rectangle(wall_bottom)
 
+    elif ball.colliderect(random_object):
+        #If collide with up or down
+        if(ball.top <= random_object.bottom and ball.bottom >= random_object.top):
+            ball_speed_y *= -1
+        #If collide with left
+        elif(ball.right >= random_object.left and ball.left <= random_object.left) or (ball.left <= random_object.right and ball.right >= random_object.right):
+            ball_speed_x *= -1
+
+
+    
+
 
 # Checks if the ball goes beyond the bound and resets the pos and adds a point to the player
 def scoring():
@@ -67,6 +78,15 @@ def scoring():
             SCORE_SOUND.play()
         else:
             FINISH_SOUND.play()
+
+def random_object_function(random_object, counter):
+    if counter == 420:
+        random_object.x = random.randint(0, WINDOW_WIDTH - random_object.width)
+        random_object.y = random.randint(0, WINDOW_HEIGHT - random_object.height)
+        counter = 0
+    else:
+        counter += 1
+    return counter
 
 
 # Resets the ball to the center and stops the movement and randomizes the movement
@@ -218,6 +238,7 @@ player_left = pygame.Rect(10, WINDOW_HEIGHT/2-45, 20, 90)
 player_right = pygame.Rect(WINDOW_WIDTH-30, WINDOW_HEIGHT/2-45, 20, 90)
 wall_top = pygame.Rect(0, 0, WINDOW_WIDTH, 1)
 wall_bottom = pygame.Rect(0, WINDOW_HEIGHT, WINDOW_WIDTH, 1)
+random_object = pygame.Rect(WINDOW_WIDTH/2-11, WINDOW_HEIGHT/2-11, 45, 45)
 
 CRT_IMAGE = pygame.image.load('graphics/crt.png').convert_alpha()
 CRT_IMAGE = pygame.transform.scale(CRT_IMAGE, (WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -241,6 +262,7 @@ ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randin
 
 timer_wert = 10
 timer_temp = 0
+counter = 0
 
 highscores = []
 
@@ -312,6 +334,7 @@ while running:
     ball_bounce()
     scoring()
     player_boundaries()
+    counter = random_object_function(random_object, counter)
 
     # Updating the player movement
     player_left.y += player_left_speed
@@ -362,6 +385,7 @@ while running:
         pygame.draw.rect(WINDOW, WHITE, player_right)
         pygame.draw.ellipse(WINDOW, WHITE, ball)
         pygame.draw.aaline(WINDOW, WHITE, (WINDOW_WIDTH/2, 0),(WINDOW_WIDTH/2, WINDOW_HEIGHT))
+        pygame.draw.rect(WINDOW, WHITE, random_object)
 
         # Drawing and updating the score
         player_left_text = SCORE_FONT.render(
