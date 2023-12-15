@@ -35,7 +35,7 @@ class Pacman(Character):
         self.is_dying = True
         self.remove_heart()
         self.time_of_death = time.time()
-
+        pacman_death_sfx.play()
     def reset_position(self):
         self.x, self.y = 336, TOP_OFFSET + 564
         self.keyboardMemory = RIGHT
