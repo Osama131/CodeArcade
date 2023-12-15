@@ -15,10 +15,8 @@ class PillManager:
         else:
             if pill_to_eat.is_energizer:
                 self.game.current_score().add_points_for("energizer")
-                self.game.ghosts[0].make_scared()
-                self.game.ghosts[1].make_scared()
-                self.game.ghosts[2].make_scared()
-                self.game.ghosts[3].make_scared()
+                for ghost in self.game.ghosts:
+                    ghost.make_scared()
             else:
                 self.game.current_score().add_points_for("pill")
         pill_to_eat.sprite.kill()
