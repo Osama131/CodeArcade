@@ -16,9 +16,11 @@ def bounce_off_rectangle(rectangle):
 
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
 def ball_bounce():
-    global ball_speed_x
+    global ball_speed_x, ball_speed_y
     if is_playing and not is_reset:
         ball.x += ball_speed_x
+        ball.y += ball_speed_y
+        print(ball_speed_y)
 
     if ball.colliderect(player_left):
         bounce_off_rectangle(player_left)
@@ -55,9 +57,10 @@ def scoring():
 
 # Resets the ball to the center and stops the movement and randomizes the movement
 def ball_reset():
-    global ball_speed_x, is_reset, is_playing
+    global ball_speed_x, is_reset, is_playing, ball_speed_y
     ball.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
     ball_speed_x = 6 * random.choice((1, -1))
+    ball_speed_y = 0.1 * random.randint(-10, 10)
     is_reset = True
 
 
@@ -190,6 +193,7 @@ player_left_score = 0
 player_right_score = 0
 player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
+ball_speed_y = 0.1 * random.randint(-10, 10)
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
