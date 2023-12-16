@@ -1,7 +1,6 @@
 import pygame
 import time
 import random
-import os
 
 # Speed of snake
 snake_speed = 15
@@ -106,7 +105,7 @@ while True:
         snake_body.pop()
 
     game_window.fill(black)
-
+ 
     for pos in snake_body:
         pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], 10, 10))
         pygame.draw.rect(game_window, white, pygame.Rect(fruit_position[0], fruit_position[1], 10, 10))
@@ -121,8 +120,15 @@ while True:
                 game_over()
                 
     font()
-
-    # CHALLENGE 8
+    pygame.draw.rect(game_window, red, pygame.Rect(0,0,window_x,window_y),2)
+    """#Challenge 8 (pause)
+    pause=True
+    key=pygame.key.get_pressed()
+    if key[pygame.K_p]:
+        print(" ")
+        key=pygame.key.get_pressed()
+        if key[pygame.K_p]:
+                pause=False"""
 
     # Refresh game screen
     pygame.display.update()
