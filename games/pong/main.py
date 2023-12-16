@@ -260,7 +260,7 @@ player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
 ball_speed_y = random.choice((0.1 * random.randint(-10, -5), 0.1 * random.randint(5, 10)))
 
-timer_wert = 10
+timer_wert = 100
 timer_temp = 0
 counter = 0
 
