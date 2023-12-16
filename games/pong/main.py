@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -8,17 +9,18 @@ pygame.init()
 # TASK 2.1 - Make ball move in different ways
 # TASK 2.2 - Bounce off the top and bottom of the window
 def bounce_off_rectangle(rectangle):
-    global ball_speed_x
+    global ball_speed_x, ball_speed_y
     HIT_SOUND.play()
 
     ball_speed_x *= -1
-
+    ball_speed_y *= 1
 
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
 def ball_bounce():
-    global ball_speed_x
+    global ball_speed_x, ball_speed_y
     if is_playing and not is_reset:
         ball.x += ball_speed_x
+        ball.y += ball_speed_y
 
     if ball.colliderect(player_left):
         bounce_off_rectangle(player_left)
@@ -29,6 +31,11 @@ def ball_bounce():
         bounce_off_rectangle(player_right)
         ball.right = player_right.left
 
+    elif ball.top <= 0:
+        ball_speed_y = 6 * random.randint(0, 1)
+    
+    elif ball.bottom >= WINDOW_HEIGHT:
+        ball_speed_y = 6 * random.randint(-1, 0)
 
 # Checks if the ball goes beyond the bound and resets the pos and adds a point to the player
 def scoring():
@@ -55,18 +62,19 @@ def scoring():
 
 # Resets the ball to the center and stops the movement and randomizes the movement
 def ball_reset():
-    global ball_speed_x, is_reset, is_playing
+    global ball_speed_x, is_reset, is_playing, ball_speed_y
     ball.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
     ball_speed_x = 6 * random.choice((1, -1))
+    ball_speed_y = 6 * random.choice((1, -1))
     is_reset = True
-
 
 # Resets the players to the startingpositions and stops the movement
 def players_reset():
-    global player_left_speed #player_right_speed
+    global player_left_speed, player_right_speed
     player_left.midleft = (10, WINDOW_HEIGHT/2)
     player_right.midright = (WINDOW_WIDTH-10, WINDOW_HEIGHT/2)
     player_left_speed = 0
+    player_right_speed = 0
 
 
 # Checks if the players goes beyond the bound and resets the pos
@@ -170,13 +178,14 @@ ball = pygame.Rect(WINDOW_WIDTH/2-11, WINDOW_HEIGHT/2-11, 22, 22)
 player_left = pygame.Rect(10, WINDOW_HEIGHT/2-45, 20, 90)
 player_right = pygame.Rect(WINDOW_WIDTH-30, WINDOW_HEIGHT/2-45, 20, 90)
 
-CRT_IMAGE = pygame.image.load('graphics/crt.png').convert_alpha()
+CRT_IMAGE = pygame.image.load("CodeArcade-WhiteHats\\games\pong\graphics\crt.png").convert_alpha()
 CRT_IMAGE = pygame.transform.scale(CRT_IMAGE, (WINDOW_WIDTH, WINDOW_HEIGHT))
-HIT_SOUND = pygame.mixer.Sound('sounds/hit.mp3')
-SCORE_SOUND = pygame.mixer.Sound('sounds/score.mp3')
-FINISH_SOUND = pygame.mixer.Sound('sounds/finish.mp3')
-SCORE_FONT = pygame.font.Font('font/Pixeltype.ttf', 40)
-GAME_OVER_FONT = pygame.font.Font('font/Pixeltype.ttf', 80)
+HIT_SOUND = pygame.mixer.Sound('CodeArcade-WhiteHats\games\pong\sounds\hit.mp3')
+SCORE_SOUND = pygame.mixer.Sound('CodeArcade-WhiteHats\games\pong\sounds\score.mp3')
+FINISH_SOUND = pygame.mixer.Sound('CodeArcade-WhiteHats\games\pong\sounds\\finish.mp3')
+SCORE_FONT = pygame.font.Font('CodeArcade-WhiteHats\\assets\\font\Pixeltype.ttf', 40)
+GAME_OVER_FONT = pygame.font.Font('CodeArcade-WhiteHats\\assets\\font\Pixeltype.ttf', 80)
+TIME=pygame.font.Font('C:\Windows\Fonts\DUBAI-BOLD.TTF',50)
 
 is_reset = True
 is_playing = False
@@ -185,8 +194,10 @@ is_score_saved = False
 
 player_left_speed = 0
 player_left_score = 0
+player_right_speed = 0
 player_right_score = 0
 ball_speed_x = 6 * random.choice((1, -1))
+ball_speed_y = 6 * random.choice((1, -1))
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
@@ -199,7 +210,9 @@ running = True
 player_left_name = get_player_name("", "Player 1")
 player_right_name = get_player_name("", "Player 2")
 while running:
+
     for event in pygame.event.get():
+    
         if event.type == pygame.QUIT:
             running = False
 
@@ -231,8 +244,16 @@ while running:
             else:
                 player_left_speed = 0
 
+            if pressed_keys[pygame.K_UP] and not pressed_keys[pygame.K_DOWN]:
+                player_right_speed = -7
+            elif pressed_keys[pygame.K_DOWN] and not pressed_keys[pygame.K_UP]:
+                player_right_speed = 7
+            else:
+                player_right_speed = 0
+
         if event.type == SPEED_UP_BALL_EVENT and is_playing and not is_reset:
-            ball_speed_x *= 1.2
+            ball_speed_x *= 2
+            ball_speed_y *= 2
 
     # Calling the functions
     ball_bounce()
@@ -241,10 +262,15 @@ while running:
 
     # Updating the player movement
     player_left.y += player_left_speed
+    player_right.y += player_right_speed
 
     WINDOW.fill(BACKGROUND_COLOR)
 
     if is_playing:
+
+        time = (int(pygame.time.get_ticks())//1000)
+        WINDOW.blit(TIME.render(str(time)+' s',True, WHITE),(WINDOW_WIDTH/2-20,20))
+
         # Drawing and coloring the rectangles and the ball as a ellipse, and the middle line
         pygame.draw.rect(WINDOW, WHITE, player_left)
         pygame.draw.rect(WINDOW, WHITE, player_right)
@@ -261,10 +287,45 @@ while running:
         WINDOW.blit(player_right_text, (WINDOW_WIDTH/2+50, WINDOW_HEIGHT/2-20))
 
         # Drawing the reset text
-        if is_reset and player_left_score == 0 and player_right_score == 0:
+        if is_reset and not is_game_over and player_left_score == 0 and player_right_score == 0:
             reset_text = SCORE_FONT.render(f'Press Space', False, WHITE)
             WINDOW.blit(reset_text, (WINDOW_WIDTH//2 -
                         reset_text.get_width() // 2, 240))
+            
+        if is_game_over:
+
+            global winner
+
+            if player_right_score > player_left_score:
+                winner = player_right_name
+                WINNER = SCORE_FONT.render(f"{winner} won the game !", False, WHITE)
+                WINDOW.blit(WINNER, (WINDOW_WIDTH//2 - WINNER.get_width() // 2, 370))
+
+            elif player_left_score < player_right_score:
+                winner = player_left_name
+                WINNER = SCORE_FONT.render(f"{winner} won the game !", False, WHITE)
+                WINDOW.blit(WINNER, (WINDOW_WIDTH//2 - WINNER.get_width() // 2, 370))
+            
+            else:
+                WINNER = SCORE_FONT.render("It's a tie!", False, WHITE)
+                WINDOW.blit(WINNER, (WINDOW_WIDTH//2 - WINNER.get_width() // 2, 370))
+
+            #TASK 3.2 - Announce the winner
+
+            WINDOW.fill(BACKGROUND_COLOR)
+            WINNER = GAME_OVER_FONT.render(f'The Winner is {winner}', False, WHITE)
+            SCOREBOARD = SCORE_FONT.render("-- Scoreboard --", False, WHITE)
+            SCOREBOARD_2 = SCORE_FONT.render(f"{player_left_name}: {player_left_score} - {player_right_name}: {player_right_score}", False, WHITE)
+               
+            RESTART_PROMPT = SCORE_FONT.render(f'Press Enter To Play Again', False, WHITE)
+
+            # TASK 3.3 - Add a game over display and possibility to restart the game
+            WINDOW.blit(WINNER , (WINDOW_WIDTH//2 - WINNER.get_width() // 2, 100))
+            WINDOW.blit(SCOREBOARD, (WINDOW_WIDTH//2 - SCOREBOARD.get_width() // 2, 280))
+            WINDOW.blit(SCOREBOARD_2, (WINDOW_WIDTH//2 - SCOREBOARD_2.get_width() // 2, 350))
+            WINDOW.blit(RESTART_PROMPT, (WINDOW_WIDTH//2 - RESTART_PROMPT.get_width() // 2, 500))
+            pygame.display.flip()
+
     else:
         # Drawing the start screen
         instructions_left = SCORE_FONT.render(f'Left Player   =   W  &  S  Key', False, WHITE)
@@ -274,11 +335,6 @@ while running:
         WINDOW.blit(instructions_right, (WINDOW_WIDTH//2 - instructions_right.get_width() // 2, 340))
         WINDOW.blit(START_PROMPT, (WINDOW_WIDTH//2 - START_PROMPT.get_width() // 2, 500))
 
-    # TASK 3 - Game Over
-    # TASK 3.1 - Make the game end
-    # TASK 3.2 - Announce the winner
-    # TASK 3.3 - Add a game over display and possibility to restart the game
-
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
     create_crt_lines()
@@ -286,7 +342,12 @@ while running:
 
     pygame.display.update()
 
+# TASK 3 - Game Over
+    # TASK 3.1 - Make the game end
+    if(time==60):
+        is_game_over=True
+
     # Frames per second
     CLOCK.tick(60)
-
+                    
 pygame.quit()
