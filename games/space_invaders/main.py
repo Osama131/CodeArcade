@@ -40,6 +40,5 @@ while playing:
             # play again
             pass
 
-
 # Quit pygame
 pygame.quit()

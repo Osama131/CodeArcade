@@ -1,4 +1,6 @@
 import pygame
+from score import Score
+
 
 class ScoreScreen:
     FONT_SIZE = 36
@@ -7,18 +9,25 @@ class ScoreScreen:
 
     def __init__(self, window):
         self.window = window
-        #self.background_image = pygame.transform.scale(self.background_image, (window.get_width(), window.get_height()))
+        self.background_image = pygame.transform.scale(self.background_image, (window.get_width(), window.get_height()))
+        self.running = True
+        self.score = Score()
+    
 
     def run(self):
         # set initial font size and position
-        while True:
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
+                if event.type == pygame.locals.KEYDOWN:
+                    if event.key == pygame.locals.K_SPACE:
+                        self.running = False
 
             # TASK 4.1 - Return to the main screen
-
+            
+            print(self.score.load_scores())
             # render the background then the text
             self.window.blit(self.background_image, (0, 0))
 

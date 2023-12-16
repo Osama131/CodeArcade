@@ -6,7 +6,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def __init__(self, pos, speed):
         super().__init__()
-        self.image = pygame.transform.rotate(self.image)
+        self.image = pygame.transform.rotate(self.image, 0)
         self.rect = self.image.get_rect()
         self.rect.center = pos
         self.speed = speed

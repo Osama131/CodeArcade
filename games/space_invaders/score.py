@@ -1,4 +1,5 @@
 import pygame
+import json
 
 # TASK 3 - Scoring System
 # TASk 3.1 - Implement functions to write and update the file
@@ -18,4 +19,10 @@ class Score(pygame.font.Font):
         self.new_score = new_score
     
     def save_score(self):
-        pass
+        file = self.load_scores()
+        file.append({"name": self.new_name, "score": self.new_score})
+        json.dump(file, open(self.FILE_NAME, "w"))
+        
+    def load_scores(self):
+        return json.load(open(self.FILE_NAME))
+

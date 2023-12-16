@@ -3,7 +3,7 @@ import random
 import pygame
 from player import Player
 from background import Background
-from enemy import Enemy
+from enemy import *
 from spritesheet import spritesheet
 from random import randint, choice
 from life import Life
@@ -77,8 +77,10 @@ class SpaceInvaders(object):
             # TASK 2.1 - Generate 2 types of enemies
             rank = random.randint(0, 1)
             enemy = Enemy(
-                self.enemy_spritesheet, (enemy_x, enemy_y), (screen_width, screen_height))
+                self.enemy_spritesheet, (enemy_x, enemy_y), (screen_width, screen_height), rank, level)
+
             self.enemies.add(enemy)
+        
 
     def display_score(self):
         self.font = pygame.font.Font("assets/font/Arcade Classic.ttf", 12)
@@ -128,6 +130,7 @@ class SpaceInvaders(object):
                     enemy.health -= 1
                     if enemy.health <= 0:
                         enemy.kill()
+                        self.score += enemy.rank*500
 
             # spawn new enemies if all enemies are destroyed
             if len(self.enemies) <= 1:
