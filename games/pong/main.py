@@ -13,7 +13,7 @@ def bounce_off_rectangle(rectangle):
     global ball_speed_y
     HIT_SOUND.play()
 
-    ball_speed_x *= -1
+    ball_speed_x *= -1.05
 
 
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
@@ -144,7 +144,7 @@ def get_player_name(text, player_number):
 
     return text
 
-def show_go_screen(right_win):
+def show_go_screen(right_win, sorted_results):
     global is_playing, is_game_over, is_reset, player_left_name, player_right_name, is_score_saved
     WINDOW.fill(BLACK)
     if right_win:
@@ -153,6 +153,14 @@ def show_go_screen(right_win):
     else:
         text2_surface = SCORE_FONT.render(player_left_name + " WON", True, WHITE)
         WINDOW.blit(text2_surface, (WINDOW_WIDTH // 2 - text2_surface.get_width()//2, WINDOW_HEIGHT // 2 - text2_surface.get_height()//2))
+    text4_surface = SCORE_FONT.render("LEADERBOARD" , True, WHITE)
+    WINDOW.blit(text4_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 10))
+    text5_surface = SCORE_FONT.render("1. " + sorted_results[0][0] + " " + sorted_results[0][1] , True, WHITE)
+    WINDOW.blit(text5_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 40))
+    text6_surface = SCORE_FONT.render("2. " + sorted_results[1][0] + " " + sorted_results[1][1], True, WHITE)
+    WINDOW.blit(text6_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 70))
+    text7_surface = SCORE_FONT.render("3. " + sorted_results[2][0] + " " + sorted_results[2][1], True, WHITE)
+    WINDOW.blit(text7_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 100))
     text3_surface = SCORE_FONT.render("Press space bar to play again", True, WHITE)
     WINDOW.blit(text3_surface, (WINDOW_WIDTH // 2 - text3_surface.get_width()//2, 380))
     pygame.display.flip()
@@ -179,14 +187,8 @@ def load_scores():
     results = s.split(';')
     for result in results[:-1]:
         high_score.append((result.split(',')[0], result.split(',')[1]))
-    for a in range(0, len(high_score)):
-        for j in range(0, len(high_score)-a-1):
-            if (high_score[j][a] > high_score[j + 1][a]):
-                temp = high_score[j]
-                high_score[j] = high_score[j + 1]
-                high_score[j + 1] = temp
-    print(high_score)
-    pass
+    sorted_list=sorted(high_score,key=lambda x:float(x[1]))
+    return sorted_list
 
 def save_scores(right_win):
     f = open("scores.txt", "a")
@@ -296,9 +298,9 @@ while running:
             else:
                 player_left_speed = 0
             #Player Right
-            if pressed_keys[pygame.K_UP] and not pressed_keys[pygame.K_DOWN]:
+            if pressed_keys[pygame.K_UP] and not pressed_keys[pygame.K_DOWN]: #Player movement +y
                 player_right_speed = -7
-            elif pressed_keys[pygame.K_DOWN] and not pressed_keys[pygame.K_UP]:
+            elif pressed_keys[pygame.K_DOWN] and not pressed_keys[pygame.K_UP]: #Player movement -y
                 player_right_speed = 7
             else:
                 player_right_speed = 0
@@ -354,16 +356,17 @@ while running:
     # TASK 3.3 - Add a game over display and possibility to restart the game
 
     if player_right_score == 3 or player_left_score == 3:
+        sorted_results= []
         t1 = time.time()
         is_game_over = True
         is_playing = False
         right_win = player_right_score > player_left_score
         resultsarray = load_scores()
         save_scores(right_win)
-        load_scores()
+        sorted_results = load_scores()
         player_right_score = 0 # reset the player score for next game
         player_left_score = 0 # reset the player score for next game
-        show_go_screen(right_win)
+        show_go_screen(right_win, sorted_results)
         count = 0 # reset the timer count for next game
 
     # Drawing the crt lines
