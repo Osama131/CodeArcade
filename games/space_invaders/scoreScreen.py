@@ -8,6 +8,7 @@ class ScoreScreen:
     def __init__(self, window):
         self.window = window
         #self.background_image = pygame.transform.scale(self.background_image, (window.get_width(), window.get_height()))
+    
 
     def run(self):
         # set initial font size and position
