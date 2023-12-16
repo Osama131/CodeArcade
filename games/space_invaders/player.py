@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.midbottom = pos
         self.speed_y = 0
         self.speed_x = 0
-        self.bullets = []
+        self.fire_cooldown = 0
 
     def move(self, keys, constraints):
         # TASK 1.1 - player movements
@@ -38,14 +38,12 @@ class Player(pygame.sprite.Sprite):
     def update(self, keys, bullets):
 
         # TASK 1.2 - fire bullets
-        if(keys[pygame.K_SPACE]):
-            self.bullets.append(Bullet(self.rect.midbottom, -10))
+        if(keys[pygame.K_SPACE] and self.fire_cooldown <= 0):
+            bullets.add(Bullet(self.rect.midbottom, -10))
+            self.fire_cooldown = 15
+
+        self.fire_cooldown -= 1
         # Move the player
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
         self.move(keys, self.constraints)
-
-        # Update Bulltes
-        for b in self.bullets:
-            b.update()
-
