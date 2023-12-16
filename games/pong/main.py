@@ -358,6 +358,7 @@ while running:
         is_game_over = True
         is_playing = False
         right_win = player_right_score > player_left_score
+        resultsarray = load_scores()
         save_scores(right_win)
         load_scores()
         player_right_score = 0 # reset the player score for next game
