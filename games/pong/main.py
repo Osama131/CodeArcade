@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -172,35 +173,32 @@ def show_go_screen(right_win):
 # TASK 4.2/4.3 - End the game based on the score or based on the time played
 
 def load_scores():
-
+    high_score = []
+    f = open("scores.txt", "r")
+    s = f.read()
+    results = s.split(';')
+    for result in results[:-1]:
+        high_score.append((result.split(',')[0], result.split(',')[1]))
+    for a in range(0, len(high_score)):
+        for j in range(0, len(high_score)-a-1):
+            if (high_score[j][a] > high_score[j + 1][a]):
+                temp = high_score[j]
+                high_score[j] = high_score[j + 1]
+                high_score[j + 1] = temp
+    print(high_score)
     pass
 
 def save_scores(right_win):
-    f = open("scores.txt", "a+")
-    s = f.read()
-    results = s.split(';')
-    print(results)
-    for i in range(len(results)):  
-        if player_left_name == results[i] and not right_win and results[i+1] < player_left_score:
-            update_scores(i, player_left_score, results)
-        elif not right_win:
-            f.write(player_left_name + ';' + str(player_left_score) + ';' )
-
-        if player_right_name == results[i] and right_win and results[i+1] < player_right_score:
-            update_scores(i, player_left_score, results)
-        elif right_win:
-            f.write(player_right_name + ';' + str(player_right_score) + ';' )
+    f = open("scores.txt", "a")
+    value = t1-t0
+    if right_win:
+        f.write(player_right_name + ',' + str("{:.2f}".format(value)) + ';')
+    else: 
+        f.write(player_left_name + ',' + str("{:.2f}".format(value)) + ';')
     f.close()
-            
     pass
 
-def update_scores(i, player_score, results):
-    f = open("scores.txt", "w").close()
-    f = open("scores.txt","a")
-    results[i+1] = player_score
-    for i in range(len(results)):
-        f.write(results[i] + ';')
-    f.close()
+def update_scores():
     pass
 
 
@@ -242,6 +240,7 @@ is_playing = False
 is_game_over = False
 is_score_saved = False
 
+count = 0
 player_left_speed = 0
 player_left_score = 0
 player_right_score = 0
@@ -279,6 +278,10 @@ while running:
             if event.key == pygame.K_SPACE and is_playing and is_reset:
                 is_reset = False
                 pygame.time.set_timer(SPEED_UP_BALL_EVENT, 30000)
+                if count == 0:
+                    #start timer
+                    t0 = time.time()
+                    count = count+1
 
         # TASK 1 - Player Right Movement
         # TASK 1.1 - Help Player right to move
@@ -350,14 +353,17 @@ while running:
     # TASK 3.2 - Announce the winner
     # TASK 3.3 - Add a game over display and possibility to restart the game
 
-    if player_right_score == 1 or player_left_score == 1:
+    if player_right_score == 3 or player_left_score == 3:
+        t1 = time.time()
         is_game_over = True
         is_playing = False
         right_win = player_right_score > player_left_score
         save_scores(right_win)
-        player_right_score = 0 
-        player_left_score = 0
+        load_scores()
+        player_right_score = 0 # reset the player score for next game
+        player_left_score = 0 # reset the player score for next game
         show_go_screen(right_win)
+        count = 0 # reset the timer count for next game
 
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
