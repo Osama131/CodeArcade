@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -9,16 +10,19 @@ pygame.init()
 # TASK 2.2 - Bounce off the top and bottom of the window
 def bounce_off_rectangle(rectangle):
     global ball_speed_x
+    global ball_speed_y
     HIT_SOUND.play()
 
-    ball_speed_x *= -1
+    ball_speed_x *= -1.05
 
 
 # Ball behaviour, starts the movement, checks if the ball collides with players or hits the wall
 def ball_bounce():
     global ball_speed_x
+    global ball_speed_y
     if is_playing and not is_reset:
         ball.x += ball_speed_x
+        ball.y += ball_speed_y
 
     if ball.colliderect(player_left):
         bounce_off_rectangle(player_left)
@@ -28,6 +32,12 @@ def ball_bounce():
     elif ball.colliderect(player_right):
         bounce_off_rectangle(player_right)
         ball.right = player_right.left
+        
+    elif ball.y >= WINDOW_HEIGHT-30:
+        ball_speed_y *= -1
+        
+    elif ball.y <= 0:
+        ball_speed_y *= -1
 
 
 # Checks if the ball goes beyond the bound and resets the pos and adds a point to the player
@@ -55,18 +65,21 @@ def scoring():
 
 # Resets the ball to the center and stops the movement and randomizes the movement
 def ball_reset():
-    global ball_speed_x, is_reset, is_playing
+    global ball_speed_x, ball_speed_y, is_reset, is_playing
     ball.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
     ball_speed_x = 6 * random.choice((1, -1))
+    ball_speed_y = 6 * random.choice((1, -1))
     is_reset = True
 
 
 # Resets the players to the startingpositions and stops the movement
 def players_reset():
     global player_left_speed #player_right_speed
+    global player_right_speed
     player_left.midleft = (10, WINDOW_HEIGHT/2)
     player_right.midright = (WINDOW_WIDTH-10, WINDOW_HEIGHT/2)
     player_left_speed = 0
+    player_right_speed = 0
 
 
 # Checks if the players goes beyond the bound and resets the pos
@@ -131,14 +144,60 @@ def get_player_name(text, player_number):
 
     return text
 
+def show_go_screen(right_win, sorted_results):
+    global is_playing, is_game_over, is_reset, player_left_name, player_right_name, is_score_saved
+    WINDOW.fill(BLACK)
+    if right_win:
+        text1_surface = SCORE_FONT.render(player_right_name + " WON", True, WHITE)
+        WINDOW.blit(text1_surface, (WINDOW_WIDTH // 2 - text1_surface.get_width()//2, WINDOW_HEIGHT // 2 - text1_surface.get_height()//2))
+    else:
+        text2_surface = SCORE_FONT.render(player_left_name + " WON", True, WHITE)
+        WINDOW.blit(text2_surface, (WINDOW_WIDTH // 2 - text2_surface.get_width()//2, WINDOW_HEIGHT // 2 - text2_surface.get_height()//2))
+    text4_surface = SCORE_FONT.render("LEADERBOARD" , True, WHITE)
+    WINDOW.blit(text4_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 10))
+    text5_surface = SCORE_FONT.render("1. " + sorted_results[0][0] + " " + sorted_results[0][1] , True, WHITE)
+    WINDOW.blit(text5_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 40))
+    text6_surface = SCORE_FONT.render("2. " + sorted_results[1][0] + " " + sorted_results[1][1], True, WHITE)
+    WINDOW.blit(text6_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 70))
+    text7_surface = SCORE_FONT.render("3. " + sorted_results[2][0] + " " + sorted_results[2][1], True, WHITE)
+    WINDOW.blit(text7_surface, (WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, 100))
+    text3_surface = SCORE_FONT.render("Press space bar to play again", True, WHITE)
+    WINDOW.blit(text3_surface, (WINDOW_WIDTH // 2 - text3_surface.get_width()//2, 380))
+    pygame.display.flip()
+    while is_game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:  # If the key is escape
+                if event.key == pygame.K_ESCAPE: 
+                    pygame.quit()
+                    quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and (is_playing == False):
+                    is_playing = True
+                    is_score_saved = False
+                    is_game_over = False
+
 # TASK 4 - Scoring System
 # TASK 4.1 - Implement saving, loading and updating functions
 # TASK 4.2/4.3 - End the game based on the score or based on the time played
 
 def load_scores():
-    pass
+    high_score = []
+    f = open("scores.txt", "r")
+    s = f.read()
+    results = s.split(';')
+    for result in results[:-1]:
+        high_score.append((result.split(',')[0], result.split(',')[1]))
+    sorted_list=sorted(high_score,key=lambda x:float(x[1]))
+    return sorted_list
 
-def save_scores():
+def save_scores(right_win):
+    f = open("scores.txt", "a")
+    value = t1-t0
+    if right_win:
+        f.write(player_right_name + ',' + str("{:.2f}".format(value)) + ';')
+    else: 
+        f.write(player_left_name + ',' + str("{:.2f}".format(value)) + ';')
+    f.close()
     pass
 
 def update_scores():
@@ -183,10 +242,13 @@ is_playing = False
 is_game_over = False
 is_score_saved = False
 
+count = 0
 player_left_speed = 0
 player_left_score = 0
 player_right_score = 0
+player_right_speed = 0
 ball_speed_x = 6 * random.choice((1, -1))
+ball_speed_y = 6 * random.choice((1, -1))
 
 SPEED_UP_BALL_EVENT = pygame.USEREVENT + 2
 SCORE_FILE = "scores.txt"
@@ -218,18 +280,31 @@ while running:
             if event.key == pygame.K_SPACE and is_playing and is_reset:
                 is_reset = False
                 pygame.time.set_timer(SPEED_UP_BALL_EVENT, 30000)
+                if count == 0:
+                    #start timer
+                    t0 = time.time()
+                    count = count+1
 
         # TASK 1 - Player Right Movement
         # TASK 1.1 - Help Player right to move
         # Check if the player presses the keys and move the players
         pressed_keys = pygame.key.get_pressed()
         if is_playing and not is_reset:
+            #Player Left
             if pressed_keys[pygame.K_w] and not pressed_keys[pygame.K_s]:
                 player_left_speed = -7
             elif pressed_keys[pygame.K_s] and not pressed_keys[pygame.K_w]:
                 player_left_speed = 7
             else:
                 player_left_speed = 0
+            #Player Right
+            if pressed_keys[pygame.K_UP] and not pressed_keys[pygame.K_DOWN]: #Player movement +y
+                player_right_speed = -7
+            elif pressed_keys[pygame.K_DOWN] and not pressed_keys[pygame.K_UP]: #Player movement -y
+                player_right_speed = 7
+            else:
+                player_right_speed = 0
+            
 
         if event.type == SPEED_UP_BALL_EVENT and is_playing and not is_reset:
             ball_speed_x *= 1.2
@@ -241,6 +316,7 @@ while running:
 
     # Updating the player movement
     player_left.y += player_left_speed
+    player_right.y += player_right_speed
 
     WINDOW.fill(BACKGROUND_COLOR)
 
@@ -278,6 +354,20 @@ while running:
     # TASK 3.1 - Make the game end
     # TASK 3.2 - Announce the winner
     # TASK 3.3 - Add a game over display and possibility to restart the game
+
+    if player_right_score == 3 or player_left_score == 3:
+        sorted_results= []
+        t1 = time.time()
+        is_game_over = True
+        is_playing = False
+        right_win = player_right_score > player_left_score
+        resultsarray = load_scores()
+        save_scores(right_win)
+        sorted_results = load_scores()
+        player_right_score = 0 # reset the player score for next game
+        player_left_score = 0 # reset the player score for next game
+        show_go_screen(right_win, sorted_results)
+        count = 0 # reset the timer count for next game
 
     # Drawing the crt lines
     CRT_IMAGE.set_alpha(random.randint(50, 65))
