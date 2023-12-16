@@ -128,6 +128,7 @@ class SpaceInvaders(object):
                     enemy.health -= 1
                     if enemy.health <= 0:
                         enemy.kill()
+                        self.score += enemy.rank*500
 
             # spawn new enemies if all enemies are destroyed
             if len(self.enemies) <= 1:
