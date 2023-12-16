@@ -179,8 +179,8 @@ class Ghost(Character):
         return game_grid[next_index] != 9
 
 
-scared_sprite_file = 'sprites/Ghost_blink.png'
-dead_sprite_file = 'sprites/Ghost_die.png'
+scared_sprite_file = 'sprites/Ghost_blink.bmp'
+dead_sprite_file = 'sprites/Ghost_die.bmp'
 
 # positions that are often used
 in_front_of_house_pos = map_column_row_to_coordinates(13, 11)
@@ -192,16 +192,16 @@ clyde_start_pos = map_column_row_to_coordinates(15, 14)
 def init_ghosts(game):
     ghosts: list[Ghost] = []
 
-    blinky = Ghost('blinky', in_front_of_house_pos, 'sprites/Blinky_tileset.png', (636, 12), game)
+    blinky = Ghost('blinky', in_front_of_house_pos, 'sprites/Blinky_tileset.bmp', (636, 12), game)
     ghosts.append(blinky)
 
-    pinky = Ghost('pinky', pinky_start_pos, 'sprites/Pinky_tileset.png', (36, 12), game, 2)
+    pinky = Ghost('pinky', pinky_start_pos, 'sprites/Pinky_tileset.bmp', (36, 12), game, 2)
     ghosts.append(pinky)
 
-    inky = Ghost('pinky', inky_start_pos, 'sprites/Inky_tileset.png', (636, 832), game, 4)
+    inky = Ghost('pinky', inky_start_pos, 'sprites/Inky_tileset.bmp', (636, 832), game, 4)
     ghosts.append(inky)
 
-    clyde = Ghost('clyde', clyde_start_pos, 'sprites/Clyde_tileset.png', (12, 832), game, 6)
+    clyde = Ghost('clyde', clyde_start_pos, 'sprites/Clyde_tileset.bmp', (12, 832), game, 6)
     ghosts.append(clyde)
 
     return ghosts

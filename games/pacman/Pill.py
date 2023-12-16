@@ -6,7 +6,7 @@ class Pill:
         self.x, self.y = pos
         self.is_energizer = is_energizer
         if is_energizer:
-            self.sprite = MovableSprite('sprites/Power_Pill.png', scale = False)
+            self.sprite = MovableSprite('sprites/Power_Pill.bmp', scale = False)
         else:
-            self.sprite = MovableSprite('sprites/pill.png', scale = False)
+            self.sprite = MovableSprite('sprites/pill.bmp', scale = False)
         self.sprite.move(self.x,self.y, True)

@@ -13,8 +13,9 @@ window_y = 480
 black = pygame.Color(0, 0, 0)
 white = pygame.Color(255, 255, 255)
 red = pygame.Color(255, 0, 0)
-green = pygame.Color(0, 255, 0)
+green = pygame.Color(5, 87, 24)
 blue = pygame.Color(0, 0, 255)
+orange = pygame.Color(235, 113, 42)
 
 # Initialize pygame
 pygame.init()
@@ -36,6 +37,8 @@ snake_body = [[100, 50], [90, 50], [80, 50], [70, 50]]
 fruit_position = [random.randrange(1, (window_x//10)) * 10,
                   random.randrange(1, (window_y//10)) * 10]
 fruit_spawn = True
+
+stop = False
 
 # Snake default direction
 direction = 'RIGHT'
@@ -114,7 +117,7 @@ while True:
 
 
 
-    game_window.fill(black)
+    game_window.fill(orange)
 
     for pos in snake_body:
         pygame.draw.rect(game_window, green, pygame.Rect(pos[0], pos[1], 10, 10))
@@ -124,9 +127,10 @@ while True:
     # CHALLENGE 7
     if snake_position[0] > window_x or snake_position[0] < 0 or snake_position[1] < 0 or snake_position[1] > window_y or snake_body[0] in snake_body[1:]:
         change_to = 'STOP'
+        stop = True
         pygame.draw.rect(game_window, red, pygame.Rect(0, 0, window_x, window_y))
         font = pygame.font.SysFont('Arial', 50)
-        textGameOver = font.render("Game Over", True, black)
+        textGameOver = font.render("Game Over. Your Score is {0}".format(score), True, black)
         rectGameOver = textGameOver.get_rect(center=game_window.get_rect().center)
         game_window.blit(textGameOver, rectGameOver)
         pygame.display.flip()
@@ -136,13 +140,14 @@ while True:
 
     # CHALLENGE 5
     font = pygame.font.SysFont('Arial', 25)
-    textTitle = font.render("Score: {0}".format(score), True, red)
+    textTitle = font.render("Score: {0}".format(score), True, black)
     rectTitle = textTitle.get_rect(center=(60, 20))
     # game_window.get_rect().center (um in der Mitte zu haben)
     game_window.blit(textTitle, rectTitle)
 
     # Refresh game screen
-    pygame.display.update()
+    if not stop:
+        pygame.display.update()
 
     # Frame per Second Refresh rate
     fps.tick(snake_speed)

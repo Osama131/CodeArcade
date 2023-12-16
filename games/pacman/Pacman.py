@@ -17,8 +17,8 @@ class Pacman(Character):
 
         # dictonary for the different modi pacman has (hunt or dead)
         self.modi: dict[str, CharacterMode] = {
-            "hunt": CharacterMode(MovableSprite('sprites/Pacman_Tileset.png', 12), 3, True),
-            "dead": CharacterMode(MovableSprite('sprites/pacman_die.png', 12), 12, False)
+            "hunt": CharacterMode(MovableSprite('sprites/Pacman_Tileset.bmp', 12), 3, True),
+            "dead": CharacterMode(MovableSprite('sprites/pacman_die.bmp', 12), 12, False)
         }
         self.cur_mode = "hunt"
         sprite = self.modi[self.cur_mode].sprite
@@ -71,7 +71,7 @@ class Pacman(Character):
 
     # Adds hearts at bottom, location is dependent on the indes
     def create_heart_sprite(self, index):
-        heart_sprite = MovableSprite('sprites/pacman_hearts.png')
+        heart_sprite = MovableSprite('sprites/pacman_hearts.bmp')
         heart_sprite.move(50 + TILE_SIZE * 2 * index, HEIGHT - TILE_SIZE * 2)
         return heart_sprite
 

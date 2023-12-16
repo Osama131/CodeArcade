@@ -39,8 +39,8 @@ class MainGame:
         self.ghosts = init_ghosts(self)
         # The following code is currently commented out and needs to be used for a challenge later on
         # self.fruits = [
-        #     Fruit('cherry', (336, TOP_OFFSET + 564), 'sprites/cherry.png', 700),
-        #     Fruit('strawberry', (336, TOP_OFFSET + 564), 'sprites/strawberry.png', 1700)
+        #     Fruit('cherry', (336, TOP_OFFSET + 564), 'sprites/cherry.bmp', 700),
+        #     Fruit('strawberry', (336, TOP_OFFSET + 564), 'sprites/strawberry.bmp', 1700)
         # ]
 
 
@@ -71,7 +71,7 @@ class MainGame:
         return self.scores["current"]
 
     def init_background(self):
-        background_image = load_image('sprites/grid.png')
+        background_image = load_image('sprites/grid.bmp')
         self.screen.blit(background_image, [0, TOP_OFFSET])
         background_surface = self.screen.copy()
         return background_surface
@@ -175,7 +175,7 @@ class MainGame:
         background_sfx.play()
 
         # display the game over image in the middle of the screen
-        gameover_image = load_image('sprites/pacman_gameover.png')
+        gameover_image = load_image('sprites/pacman_gameover.bmp')
         gameover_image = pygame.transform.scale(gameover_image, (750, 150))
         self.screen.blit(gameover_image, gameover_image.get_rect(center=self.screen.get_rect().center))
         pygame.display.update()
