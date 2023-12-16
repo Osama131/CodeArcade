@@ -11,20 +11,20 @@ class Enemy(pygame.sprite.Sprite):
         # TASK 2.2 - Implement health system based on rank
         # TASK 2.3 - Increase health of the enemies based on the level of the player
 
-        enemy_image = enemy_spritesheet.image_at((1300, 7, 300, 232), -1)
-
+        
+        self.enemy_spritesheet = enemy_spritesheet
         self.dead = False
         # scale the image to 1/3 of its original size
-        self.image = pygame.transform.scale(enemy_image, (50, 50))
+        self.rank = rank
+        self.set_image()
         self.rect = self.image.get_rect()
         self.rect.bottomleft = pos
         self.constraints = constraints
         self.timer = 0
         self.speed_x = random.randint(-5, 5)
         self.speed_y = 0.75
-        self.rank = rank
         self.level = level
-        self.health = self.rank
+        self.set_health()
 
     def update(self):
         if not self.dead:
@@ -60,7 +60,7 @@ class Enemy(pygame.sprite.Sprite):
         self.explosion_sound = sound
 
     def set_health(self):
-        self.health = self.rank+self.level*0.5
+        self.health = self.rank+self.level*0.25
 
     def hit(self):
         self.health -= 1
@@ -70,9 +70,37 @@ class Enemy(pygame.sprite.Sprite):
     
     def kill(self) -> None:
         return super().kill()
+    
+    def set_image(self):
+        if self.rank == 0:
+            enemy_image = self.enemy_spritesheet.image_at((1300, 7, 300, 232), -1)
+        elif self.rank == 1:
+            enemy_image = self.enemy_spritesheet.image_at((1300, 430, 300, 300), -1)
+        elif self.rank == 5:
+            enemy_image = self.enemy_spritesheet.image_at((3375, 430, 1230, 1380), -1)
+        self.image = pygame.transform.scale(enemy_image, (50, 50))
+
+class Boss(Enemy):
+    def __init__(self, enemy_spritesheet, pos, constraints, rank, level):
+        super().__init__(enemy_spritesheet, pos, constraints, rank, level)
+        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.rect = self.image.get_rect()
+        self.rect.bottomleft = pos
+        self.constraints = constraints
+        self.timer = 0
+        self.speed_x = random.randint(-2, 2)
+        self.speed_y = 0.75
+        self.level = level
+        self.set_health()
+        self.health += 5
+    
+
+
 
     
     
 
 # TASK 5 - Add special enemy - Boss
 # Boss should look bigger than normal enemies, move faster and have more health
+    
+
