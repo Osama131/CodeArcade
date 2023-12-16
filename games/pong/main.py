@@ -172,25 +172,26 @@ def show_go_screen(right_win):
 # TASK 4.2/4.3 - End the game based on the score or based on the time played
 
 def load_scores():
-
-    pass
-
-def save_scores(right_win):
-    f = open("scores.txt", "a+")
+    f = open("scores.txt", "r")
     s = f.read()
-    results = s.split(';')
-    print(results)
-    for i in range(len(results)):  
-        if player_left_name == results[i] and not right_win and results[i+1] < player_left_score:
-            update_scores(i, player_left_score, results)
-        elif not right_win:
-            f.write(player_left_name + ';' + str(player_left_score) + ';' )
-
-        if player_right_name == results[i] and right_win and results[i+1] < player_right_score:
-            update_scores(i, player_left_score, results)
-        elif right_win:
-            f.write(player_right_name + ';' + str(player_right_score) + ';' )
+    results = s.split('\n')
+    resultsarray = [results[i].split(';') for i in range(len(results))]
     f.close()
+    return resultsarray
+
+def save_scores(resultsarray, player_left_name, player_right_name, player_left_score, player_right_score):
+    text_to_write = ""
+    left_in_array, right_in_array = False, False
+    for i in range(len(resultsarray)):
+        if resultsarray[i][1] < player_left_score and not left_in_array:
+            resultsarray[i][0], resultsarray[i][1] = player_left_name, player_left_score
+            left_in_array = True
+        elif resultsarray[i][0] == player_right_name and not right_in_array:
+            resultsarray[i][0], resultsarray[i][1] = player_right_name, player_right_score
+            right_in_array = True
+        text_to_write += resultsarray[i][0] + ';' + resultsarray[i][1] + '\n'
+        
+    open(SCORE_FILE, "w").write(text_to_write)
             
     pass
 
@@ -354,6 +355,7 @@ while running:
         is_game_over = True
         is_playing = False
         right_win = player_right_score > player_left_score
+        resultsarray = load_scores()
         save_scores(right_win)
         player_right_score = 0 
         player_left_score = 0
