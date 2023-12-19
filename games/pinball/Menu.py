@@ -104,7 +104,7 @@ def main_menu(screen, lastButton):
     selected %= len(choosable)
 
     # überschrift
-    draw_Text(screen, font_header, "white", "Mumble's Epic Balls", (50, window_size[1] / 6))
+    draw_Text(screen, font_header, "white", "Mumble's Pinball!", (50, window_size[1] / 6))
 
     # auswählbares
     for i in range(len(choosable)):
@@ -120,7 +120,7 @@ def leave(screen, lastButton):
 
 
 def main():
-    #globals here
+    # globals
     global option_selected, option_choosable, current_scene, music_Manager, selected, choosable
     global font_header, font_selectable, font_scores, window_size
 

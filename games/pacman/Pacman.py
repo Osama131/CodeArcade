@@ -33,6 +33,7 @@ class Pacman(Character):
     def die(self):
         self.change_mode("dead")
         self.is_dying = True
+        pacman_death_sfx.play()
         self.remove_heart()
         self.time_of_death = time.time()
 
@@ -76,10 +77,12 @@ class Pacman(Character):
         return heart_sprite
 
     def init_hearts(self, sprite_group):
-        # CHALLENGE 9
-        sprite = self.create_heart_sprite(0)
-        self.hearts.append(sprite)
-        sprite_group.add(sprite)
+        # CHALLENGE 1.6
+        for index in range(3):
+            sprite = self.create_heart_sprite(index)
+            self.hearts.append(sprite)
+            sprite_group.add(sprite)
+        # CHALLENGE 1.6 END
 
     def remove_heart(self):
         if len(self.hearts) > 0:

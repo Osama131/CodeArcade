@@ -2,8 +2,9 @@ import random
 
 import pygame
 from player import Player
+from bullet import Bullet
 from background import Background
-from enemy import Enemy
+from enemy import Enemy, Boss
 from spritesheet import spritesheet
 from random import randint, choice
 from life import Life
@@ -29,8 +30,6 @@ class SpaceInvaders(object):
         self.enemy_spritesheet = spritesheet("assets/graphics/enemy_sheet.png")
         self.enemies = pygame.sprite.Group()
 
-        # TASK 5 - The Boss Enemy
-
         # load explosion spritesheet
         self.explosion_spritesheet = spritesheet(
             "assets/graphics/PC Computer - Spelunky Classic - Explosion.png")
@@ -47,16 +46,27 @@ class SpaceInvaders(object):
         ],
             colorkey=-1)
         
-        # ADVANCED - TASK 2.1 - Add explosion sounds
+        self.enemy_explosion_sound = pygame.mixer.Sound("assets/audio/explode.mp3")
+        self.small_explosion_sound = pygame.mixer.Sound("assets/audio/explode_small.mp3")
         self.hit_sound = pygame.mixer.Sound("assets/audio/hit.mp3")
         self.add_life_sound = pygame.mixer.Sound("assets/audio/add_life.mp3")
+
+        # spawn enemies
+        self.spawn_timer = random.randrange(30, 120)
+
+        # Extra setup
+        self.boss = pygame.sprite.GroupSingle()
+        self.boss_spawn_time = randint(400, 800)
+        self.boss_bullets = pygame.sprite.Group()
 
         # Set up the bullets
         self.bullets = pygame.sprite.Group()
 
-        # TASK 6.1 - Set up backgrounds
+        # Set up backgrounds
+        self.background = Background("assets/graphics/background/Blue/Blue_Nebula_1.png",
+                                     2, self.window.get_width(), self.window.get_height())
 
-        # Set up the player
+        # setup the player
         player_sprite = Player(pygame.image.load("assets/graphics/ship1.png"), (self.window.get_width() // 2, self.window.get_height()),
                                (self.window.get_width(), self.window.get_height()))
         self.player = pygame.sprite.GroupSingle(player_sprite)
@@ -67,18 +77,30 @@ class SpaceInvaders(object):
         self.add_life()
         self.add_life()
         
-    def spawn_enemies(self, wave_length, level):
+    def spawn_enemies(self, max_width, wave_length, level):
         enemy_width = 50
         screen_width, screen_height = pygame.display.get_surface().get_size()
-        # ADVANCED -TASK 2 - Add explosions
+
         for i in range(wave_length):
             enemy_x = random.randrange(0, screen_width-enemy_width)
             enemy_y = random.randrange(-10, 30)
-            # TASK 2.1 - Generate 2 types of enemies
             rank = random.randint(0, 1)
             enemy = Enemy(
-                self.enemy_spritesheet, (enemy_x, enemy_y), (screen_width, screen_height))
+                self.enemy_spritesheet, (enemy_x, enemy_y), (screen_width, screen_height), level, choice(['right', 'left']), rank)
+            enemy.set_explosion_images(self.explosion_array)
+            enemy.set_explosion_sound(self.enemy_explosion_sound)
             self.enemies.add(enemy)
+
+    def boss_alien_timer(self, level):
+        self.boss_spawn_time -= 1
+        screen_width, screen_height = pygame.display.get_surface().get_size()
+        if self.boss_spawn_time <= 0:
+            ex = Boss(screen_width, self.enemy_spritesheet,
+                      (screen_width, screen_height), level, choice(['right', 'left']))
+            ex.set_explosion_images(self.explosion_array)
+            ex.set_explosion_sound(self.enemy_explosion_sound)
+            self.boss.add(ex)
+            self.boss_spawn_time = randint(400, 800)
 
     def display_score(self):
         self.font = pygame.font.Font("assets/font/Arcade Classic.ttf", 12)
@@ -101,6 +123,7 @@ class SpaceInvaders(object):
 
             # clear the screen
             self.window.fill((0, 0, 0))
+            self.background.draw(self.window)
 
             # Handle events
             for event in pygame.event.get():
@@ -113,25 +136,52 @@ class SpaceInvaders(object):
 
             self.player.update(keys, self.bullets)
             self.bullets.update()
+            self.boss_bullets.update()
             self.enemies.update()
+            self.boss.update(self.boss_bullets)
 
+            self.boss_alien_timer(level)
             self.display_score()
             self.display_level(level)
+
 
             # check for collisions
             # check for collisions between bullets and enemies
             enemy_hits = pygame.sprite.groupcollide(
                 self.enemies, self.bullets, False, True)
-            # TASK 3.1 - Calculate points for the killed enemies
             if enemy_hits:
                 for enemy in enemy_hits:
                     enemy.health -= 1
                     if enemy.health <= 0:
-                        enemy.kill()
+                        self.score += 100 * enemy.rank + 50*level
+                        enemy.explode()
+                    else:
+                        self.small_explosion_sound.play()
+
+            # check for collision between boss and bullets
+            boss_hits = pygame.sprite.groupcollide(
+                self.boss, self.bullets, False, True)
+            if boss_hits:
+                for boss in boss_hits:
+                    boss.health -= 1
+                    if boss.health <= 0:
+                        self.score += 5000 + 100*level
+                        boss.explode()
+                    else:
+                        self.small_explosion_sound.play()
+
+            # check for collision between boss bullet and player
+            hits = pygame.sprite.groupcollide(
+                self.player, self.boss_bullets, False, True) 
+            num_hits=len(hits)
+            if num_hits > 0:
+                for index in range(num_hits):
+                    if(not self.take_life()):
+                        running=False
 
             # spawn new enemies if all enemies are destroyed
             if len(self.enemies) <= 1:
-                self.spawn_enemies(wave_length, level)
+                self.spawn_enemies(self.window.get_width(), wave_length, level)
                 wave_length += 3
 
             if self.score >= 4000 * level:
@@ -148,19 +198,28 @@ class SpaceInvaders(object):
             if num_hits > 0:
                 for p,enms in hits.items():
                     for e in enms:
+                        #enemy is still in the list after explode() and so the logic happens twice
                         if e.dead:
                             continue
                         if(not self.take_life()):
                             # stop the game if player is out of lives
                             running=False
                         else:
-                            e.kill()
+                            # enemy explodes when hitting player. player score increases
+                            self.score += 100 * e.rank + 50*level
+                            e.explode()                                  
 
-            # Draw everything
+            # check for collisions between player and boss
+            hits = pygame.sprite.groupcollide(
+                self.player, self.boss, False, False)
+            if len(hits) > 0:
+                running = False
             self.lives.draw(self.window)
             self.player.draw(self.window)
             self.bullets.draw(self.window)
+            self.boss_bullets.draw(self.window)
             self.enemies.draw(self.window)
+            self.boss.draw(self.window)
 
             pygame.display.update()
 

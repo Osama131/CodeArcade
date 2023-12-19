@@ -30,7 +30,7 @@ def newCar():
         "rpm" : 800,            # self-explanatory
         "rpmmax" : 6400,        # max rpm engine will go by accelerating in some correct gear
         "rpmred" : 6000,        # redline starting point
-        "rpmmin" : 800,         # idle rpm, Car will automatically add gas if rpm subceeds this value
+        "rpmmin" : 800,         # idle rpm, ECU will automatically add gas if rpm subceeds this value
         "ratio" : [1.0, 2.66, 1.448, 0.96, 0.745, 0.612, 0.5, 2.66],     # gear ratios: neutral, 1-6, reverse
         # these last four are directly controlled by the driver
         "gear" : NEUTRAL,       # gears are 1-6, reverse and neutral
@@ -125,11 +125,18 @@ def updateCar(car, signals, fps):
     # the driver has these four methods of controlling their car
     gear, gas, brake, steer = signals
 
-    # HACKATHON CHALLENGE 2
-    # make the gears change automatically so Speedy doesn't have to shift anymore!
     if car["automatic"]:
-        
-        pass
+        gear = car["gear"]
+        down = [0, 0.4, 0.4, 0.5, 0.6, 0.7, 0.7, 0]
+
+        if gear == NEUTRAL and gas:
+            gear = 1
+        elif redlining(car):
+            gear += NEUTRAL < gear < 6
+        elif car["rpm"] <= car["rpmmax"] * down[gear]:
+            gear -= gear > 1
+            if car["rpm"] <= car["rpmmin"] * 1.1 and gear == 1 and brake:
+                gear = NEUTRAL
 
 
     # set acceleration to some value that will correspond to the same rpm the car currently has
@@ -138,7 +145,7 @@ def updateCar(car, signals, fps):
         car["accel"] = car["rpm"] / car["rpmmax"] * car["accelmax"]
 
     # automatic shifting into reverse and back
-    # < 0.1 because Car adds idle gas, so we never really reach 0 if higher gear is selected
+    # < 0.1 because ECU adds idle gas, so we never really reach 0 if higher gear is selected
     if brake and (car["speed"] < 0.1 or car["reverse"]):
         gear = REVERSE
     if gas and car["speed"] < 0.1 and gear == REVERSE:

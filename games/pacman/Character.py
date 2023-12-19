@@ -37,8 +37,12 @@ class Character:
 
     # checks if figure is on a portal tile (5 or 6) --> if not leave function, if yes use the portal
     def warp(self):
-        # CHALLENGE 10
-        pass
+        # CHALLENGE 1.7
+        if game_grid[self.grid_index] not in (5, 6): return False
+        self.grid_index = self.grid_index + 27 if game_grid[self.grid_index] == 5 else self.grid_index - 27
+        self.x, self.y = map_index_to_coordinates(self.grid_index)
+        # CHALLENGE 1.7 END
+        return False
 
 
     def change_mode(self, mode):

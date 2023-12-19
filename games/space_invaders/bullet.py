@@ -4,9 +4,9 @@ class Bullet(pygame.sprite.Sprite):
     image = pygame.image.load("assets/graphics/bullet.png")
     sound = pygame.mixer.Sound("assets/audio/laser1.mp3")
 
-    def __init__(self, pos, speed):
+    def __init__(self, pos, speed, angle=0):
         super().__init__()
-        self.image = pygame.transform.rotate(self.image)
+        self.image = pygame.transform.rotate(self.image, angle)
         self.rect = self.image.get_rect()
         self.rect.center = pos
         self.speed = speed

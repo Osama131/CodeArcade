@@ -36,10 +36,16 @@ while playing:
         next_action = gameOverScreen.run()
         if next_action == 'quit':
             playing = False
+        elif next_action == 'highscore':
+            scoreScreen = ScoreScreen(window)
+            show = scoreScreen.run()
+            if show == 'quit':
+                playing = False
         else:
             # play again
             pass
 
+# here we still have some time to do some clean up before we quit
 
 # Quit pygame
 pygame.quit()

@@ -45,8 +45,49 @@ change_to = direction
 score = 0
 
 # CHALLENGE 5
+# Display score function
+def show_score(color, font, size):
+    # Creating font object score_font
+    score_font = pygame.font.SysFont(font, size)
+
+    # Create display surface object score_surface
+    score_surface = score_font.render("Score: " + str(score), True, color)
+
+    # Create rectangular object for the text surface object
+    score_rect = score_surface.get_rect()
+
+    # Displaying text
+    game_window.blit(score_surface, score_rect)
+# CHALLENGE 5 END
 
 # CHALLENGE 6
+# Game over function
+def game_over():
+    # Creating font object my_font
+    my_font = pygame.font.SysFont("times new roman", 50)
+
+    # Creating text surface on which text will be drawn
+    game_over_surface = my_font.render("Your score is: " + str(score), True, red)
+
+    # Create a rectangular object for the text surface object
+    game_over_rect = game_over_surface.get_rect()
+
+    # Setting position of the text
+    game_over_rect.midtop = (window_x/2, window_y/4)
+
+    # Blit will draw text on screen
+    game_window.blit(game_over_surface, game_over_rect)
+    pygame.display.flip()
+
+    # After 2 seconds we will quit program
+    time.sleep(2)
+
+    # Deactivating pygame library
+    pygame.quit()
+
+    # quit program
+    quit()
+# CHALLENGE 6 END
 
 while True:
 
@@ -55,11 +96,39 @@ while True:
         if event.type == pygame.QUIT:
             quit()
         # CHALLENGE 2
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                change_to = 'UP'
+            if event.key == pygame.K_DOWN:
+                change_to = 'DOWN'
+            if event.key == pygame.K_LEFT:
+                change_to = 'LEFT'
+            if event.key == pygame.K_RIGHT:
+                change_to = 'RIGHT'
+        # CHALLENGE 2 END
 
     # CHALLENGE 3
+    # If two keys pressed simultaneously we dont want snake to move
+    # into two directions simultaneously
+    if change_to == 'UP' and direction != 'DOWN':
+        direction = 'UP'
+    if change_to == 'DOWN' and direction != 'UP':
+        direction = 'DOWN'
+    if change_to == 'LEFT' and direction != 'RIGHT':
+        direction = 'LEFT'
+    if change_to == 'RIGHT' and direction != 'LEFT':
+        direction = 'RIGHT'
+    # CHALLENGE 3 END
 
     # Moving snake
     # CHALLENGE 1
+    if direction == 'UP':
+        snake_position[1] -= 10
+    if direction == 'DOWN':
+        snake_position[1] += 10
+    if direction == 'LEFT':
+        snake_position[0] -= 10
+    # CHALLENGE 1 END
     if direction == 'RIGHT':
         snake_position[0] += 10
 
@@ -73,6 +142,11 @@ while True:
         snake_body.pop()
 
     # CHALLENGE 4
+    if not fruit_spawn:
+        fruit_position = [random.randrange(1, (window_x//10)) * 10,
+                          random.randrange(1, (window_y//10)) * 10]
+    fruit_spawn = True
+    # CHALLENGE 4 END
 
     game_window.fill(black)
 
@@ -82,8 +156,22 @@ while True:
     pygame.draw.rect(game_window, white, pygame.Rect(fruit_position[0], fruit_position[1], 10, 10))
 
     # CHALLENGE 7
+    # Game over conditions
+    if snake_position[0] < 0 or snake_position[0] > window_x - 10:
+        game_over()
+    if snake_position[1] < 0 or snake_position[1] > window_y - 10:
+        game_over()
+
+    # Touching snake body
+    for block in snake_body[1:]:
+        if snake_position[0] == block[0] and snake_position[1] == block[1]:
+            game_over()
+    # CHALLENGE 7 END
 
     # CHALLENGE 5
+    # Displaying score continuously
+    show_score(white, 'times new roman', 20)
+    # CHALLENGE 5 END
 
     # Refresh game screen
     pygame.display.update()

@@ -33,7 +33,9 @@ class Scoring(Sprite):
     # values for eaten may be:
     # pill, energizer, ghost, cherry, strawberry
     def add_points_for(self, eaten: str):
-        # CHALLENGE 2
-        # use eaten to decide how many points to add
+        # CHALLENGE 1.1
+        points_to_add = points[eaten]
+        self.score += points_to_add
+        # CHALLENGE 1.1 END
         self.display_score()
 

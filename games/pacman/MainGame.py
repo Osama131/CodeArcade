@@ -1,5 +1,6 @@
 import pygame
 from pygame import Surface
+from Fruit import Fruit
 from Ghost import init_ghosts
 from Pacman import Pacman
 from Scoring import Scoring
@@ -37,12 +38,28 @@ class MainGame:
         self.pacman = Pacman('pacman', (336, TOP_OFFSET + 564), self)
         self.pacman.init_hearts(self.sprites_to_draw)
         self.ghosts = init_ghosts(self)
-        # The following code is currently commented out and needs to be used for a challenge later on
-        # self.fruits = [
-        #     Fruit('cherry', (336, TOP_OFFSET + 564), 'sprites/cherry.png', 700),
-        #     Fruit('strawberry', (336, TOP_OFFSET + 564), 'sprites/strawberry.png', 1700)
-        # ]
+        self.fruits = [
+            Fruit('cherry', (336, TOP_OFFSET + 564), 'sprites/cherry.png', 700),
+            Fruit('strawberry', (336, TOP_OFFSET + 564), 'sprites/strawberry.png', 1700)
+        ]
 
+    def init_game(self):
+        self.time_for_next_animation = self.cur_time_passed + TIME_BETWEEN_ANIMATIONS
+        self.is_game_over = False
+        self.time_to_reset = None
+        self.sprites_to_draw = pygame.sprite.OrderedUpdates()
+
+        self.background_surface = self.init_background()
+        self.scores = self.init_scoring()
+
+        self.pill_manager = PillManager(self)
+        self.pacman = Pacman('pacman', (336, TOP_OFFSET + 564), self)
+        self.ghosts = init_ghosts(self)
+
+        self.pacman.init_hearts(self.sprites_to_draw)
+        self.sprites_to_draw.add(self.pacman.sprite)
+        for ghost in self.ghosts:
+            self.sprites_to_draw.add(ghost.sprite)
 
     def init_scoring(self):
         # a dictonary (dict) maps a number of keys to a respective value
@@ -64,8 +81,12 @@ class MainGame:
         return scores
 
     def update_high_score(self):
-        # CHALLENGE 4 write code to save the highscore
-        pass
+        # CHALLENGE 1.2
+        if self.scores["current"].score > self.scores["best"].score:
+            new_high_score = self.scores["current"].score
+            high_score_file = open("high_score.txt", "w")
+            high_score_file.write(str(new_high_score))
+        # CHALLENGE 1.2 END
 
     def current_score(self):
         return self.scores["current"]
@@ -103,17 +124,18 @@ class MainGame:
         if event.type == pygame.QUIT:  # the X of the window has been clicked
             self.running = False
         elif event.type == pygame.KEYDOWN:
-            # CHALLENGE 5 here you should reset the game when the player presses space bar
+            # CHALLENGE 1.3
+            if event.key == pygame.K_SPACE:
+                self.restart_game()
+            # CHALLENGE 1.3 END
             if event.key == ESCAPE_KEY:
                 self.running = False
             self.pacman.keyboard_input(event.key)
 
     def spawn_fruits(self):
-        # The following code is currently commented out and needs to be used for a challenge later on
-        # for fruit in self.fruits:
-        #     if not fruit.has_spawned and self.current_score().score > fruit.points_till_spawn:
-        #         fruit.spawn(self.sprites_to_draw)
-        pass
+        for fruit in self.fruits:
+            if not fruit.has_spawned and self.current_score().score > fruit.points_till_spawn:
+                fruit.spawn(self.sprites_to_draw)
 
     def draw_frame(self):
         if self.is_game_over: return  # while the game over screen is displayed, no frame has to be drawn
@@ -151,12 +173,11 @@ class MainGame:
             if ghost.cur_mode != 'dead':  # dead ghosts don't collide with pacman
                 if self.pacman.get_current_position() == ghost.get_current_position():
                     self.ghost_collision(ghost)
-        # The following code is currently commented out and needs to be used for a challenge later on
-        # for fruit in self.fruits:
-        #     # fruit can only collide if it is there and hasn't been eaten yet
-        #     if fruit.has_spawned and not fruit.was_eaten and self.pacman.get_current_position() == fruit.get_current_position():
-        #         fruit.eat_fruit()
-        #         self.current_score().add_points_for(fruit.name)
+        for fruit in self.fruits:
+            # fruit can only collide if it is there and hasn't been eaten yet
+            if fruit.has_spawned and not fruit.was_eaten and self.pacman.get_current_position() == fruit.get_current_position():
+                fruit.eat_fruit()
+                self.current_score().add_points_for(fruit.name)
 
     def ghost_collision(self, ghost):
         if ghost.cur_mode == "scared": # pacman has eaten a scared ghost
@@ -186,3 +207,9 @@ class MainGame:
         self.ghosts = init_ghosts(self)
         self.pacman.reset_position()
         self.pacman.change_mode("hunt")
+
+    def restart_game(self):
+        if self.is_game_over:
+            self.screen.fill("black")
+            self.init_game()
+        pass

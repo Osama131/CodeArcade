@@ -1,4 +1,5 @@
 import pygame
+from score import Score
 
 class ScoreScreen:
     FONT_SIZE = 36
@@ -7,7 +8,7 @@ class ScoreScreen:
 
     def __init__(self, window):
         self.window = window
-        #self.background_image = pygame.transform.scale(self.background_image, (window.get_width(), window.get_height()))
+        self.background_image = pygame.transform.scale(self.background_image, (window.get_width(), window.get_height()))
 
     def run(self):
         # set initial font size and position
@@ -16,17 +17,19 @@ class ScoreScreen:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-
-            # TASK 4.1 - Return to the main screen
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        return "gameover"
+                    elif event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        quit()
 
             # render the background then the text
             self.window.blit(self.background_image, (0, 0))
 
-            # TASK 4.2 - Highscore Menu - read and display saved scores
-            placeholder_text = self.font.render("Scroes are not implemeted :(", True, 'white')
-            placeholder_rect = placeholder_text.get_rect(
-                center = (self.window.get_width() // 2, self.window.get_height() // 2))
-            self.window.blit(placeholder_text, placeholder_rect)
+            # render the score board
+            score_manager = Score()
+            score_manager.draw(self.window)
 
             # render the "press esc to exit" text
             exit_text = self.font.render(

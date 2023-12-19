@@ -19,12 +19,12 @@ class Game:
         self.zoom_game_map=1600/pygame.display.get_window_size()[1]
         #ball settings
         self.ball_amount = 1 #how many lives are left
-        self.power = 22 # how much energy is in the current push
+        self.power = 30 # how much energy is in the current push
 
         self.balls_Group = pygame.sprite.Group()
         
         #map properties
-        board_Tex = pygame.image.load("pics/pinball map2.png").convert() #LOAD MAP
+        board_Tex = pygame.image.load("pics/pinball map2.png").convert()
         board_Tex_Scaled = pygame.transform.scale(board_Tex, (board_Tex.get_width() / self.zoom_game_map, board_Tex.get_height() / self.zoom_game_map)).convert()
         board_Tex_Scaled.set_colorkey("white") #which color is exempt from the collision map
         self.game_Map = GameObjects.Board(board_Tex_Scaled,0,0) #creates the sprite for the board
@@ -79,7 +79,7 @@ class Game:
     def render_Map(self):
         self.map_Group.draw(self.screen)
         self.scoreObstacles_Group.draw(self.screen)
-
+        
         #render the points for every obstacle
         for obstacle in self.scoreObstacles_Group:
             if obstacle.type =="smallCircle":
@@ -97,8 +97,6 @@ class Game:
             else:
                 print("wrong obstacle type")
 
-
-
     def render_Balls(self):
         self.balls_Group.draw(self.screen)
         #pass
@@ -115,16 +113,15 @@ class Game:
         self.screen = self.draw_Text(self.screen, font, "white", text, (self.score_position[0]/self.zoom_game_map, self.score_position[1]/self.zoom_game_map))
         pass
 
-    def render_Points(self, points, pos, zoom):
+    def render_Points(self,points, pos, zoom):
         font = pygame.font.SysFont("Comic", self.screen.get_width() // zoom, bold=True)
         text = "{points}".format(points=points)
-        self.screen = self.draw_Text(self.screen, font, "red", text, pos)
+        self.screen = self.draw_Text(self.screen, font, "red", text, pos )
         pass
 
     #endregion
 
     #region gamestates
-
     def not_started(self):
         #reset variables
         #reset balls
@@ -134,28 +131,32 @@ class Game:
 
         self.current_Scene = self.game
 
-        #OBSTACLES
-
-        #create the obstacles(round)
+        #load ScoreboardObstacles
         score_Tex = pygame.image.load("pics/100.png").convert()
         score_Tex_Scaled = pygame.transform.scale(score_Tex,(score_Tex.get_width()/ self.zoom_game_map, score_Tex.get_height()/ self.zoom_game_map)).convert()
-        for i in range(4):
-            obstacle = GameObjects.ScoreObstacle(score_Tex_Scaled,(136+200*i)/self.zoom_game_map,460/self.zoom_game_map,100,"circle")
+
+        #create the obstacles(round)
+        for i in range(2):
+            points=100+100*i
+            obstacle = GameObjects.ScoreObstacle(score_Tex_Scaled,(136+500*i)/self.zoom_game_map,460/self.zoom_game_map,points, "circle")
             self.scoreObstacles_Group.add(obstacle)
             self.combinedMask.draw(obstacle.mask,obstacle.rect.topleft) #add mask to combined mask for collisions
-        
-        #create the obstacles(rhombus)
         score_Tex = pygame.image.load("pics/50.png").convert()
         score_Tex_Scaled = pygame.transform.scale(score_Tex, (score_Tex.get_width() / self.zoom_game_map, score_Tex.get_height() / self.zoom_game_map)).convert()
-        
-        obstacle2 = GameObjects.ScoreObstacle(score_Tex_Scaled, (450 ) / self.zoom_game_map, 751 / self.zoom_game_map, 50,"rhombus")
+
+        #create the obstacles(rhombus)
+
+        points=50
+        obstacle2 = GameObjects.ScoreObstacle(score_Tex_Scaled, (600) / self.zoom_game_map, 651 / self.zoom_game_map, points, "rhombus")
         self.scoreObstacles_Group.add(obstacle2)
         self.combinedMask.draw(obstacle2.mask, obstacle2.rect.topleft)  # add mask to combined mask for collisions
 
-        #create obstacle in corner up left
         score_Tex = pygame.image.load("pics/x2.png").convert()
         score_Tex_Scaled = pygame.transform.scale(score_Tex, (score_Tex.get_width() / self.zoom_game_map, score_Tex.get_height() / self.zoom_game_map)).convert()
-        obstacle3 = GameObjects.ScoreObstacle(score_Tex_Scaled, (110) / self.zoom_game_map, 110 / self.zoom_game_map, 1000,"smallCircle")
+
+        #create obstacle in corner up left
+        points=1000
+        obstacle3 = GameObjects.ScoreObstacle(score_Tex_Scaled, (100) / self.zoom_game_map, 100 / self.zoom_game_map, points, "smallCircle")
         self.scoreObstacles_Group.add(obstacle3)
         self.combinedMask.draw(obstacle3.mask, obstacle3.rect.topleft)  # add mask to combined mask for collisions
         
@@ -182,7 +183,6 @@ class Game:
 
         self.gamestate = self.ball_waiting
 
-
     #waits for the player to launch the ball
     def ball_waiting(self):
         self.render_Map()
@@ -190,17 +190,21 @@ class Game:
         self.render_Flipper()
         self.render_Score()
 
-        # HACKATHON CHALLENGE 1
-        # Implement the launching of Bobby Bounce-a-Lot here. Choose a key of your choice and make the push differ in power so Bobby isn't pushed always the same.
-        # You can make this random or with a controlled push power.
-        # Look at the properties and class functions of him in GameObjects.py/ball to understand how his movement works. 
-        # When Bobby is launched go to the next gamestate
+        if pygame.key.get_pressed()[pygame.K_SPACE]:
+            self.power += 0.05
 
-
+        for event in self.lastButtons:
+            if event.type ==pygame.KEYUP and event.key== pygame.K_SPACE:
+                if self.power>50:
+                    self.power=50
+                self.balls_Group.sprites()[0].addImpulse(pygame.Vector2(0,-self.power))
+                self.power =30 # initial power
+                self.gamestate = self.game_running
 
     def game_running(self):
         self.render_Map()
-        simulationSteps = 50 #how many simulation steps per frame. impacts performance
+
+        simulationSteps = 25 #how many simulation steps per frame. impacts performance
 
         pressed_a = False
         pressed_d = False
@@ -212,11 +216,21 @@ class Game:
             for i in range(simulationSteps):
                 self.flipper_Right.sprite.moveFlipper(simulationSteps, pressed_a, pressed_d)
                 self.flipper_Left.sprite.moveFlipper(simulationSteps, pressed_a, pressed_d)
-                self.score += ball.simulate(self.game_Map, simulationSteps, self.combinedMask, [self.flipper_Left.sprite,self.flipper_Right.sprite]) #simulate the ball movement
+                self.score += ball.simulate(self.game_Map, simulationSteps, self.combinedMask, [self.flipper_Left.sprite,self.flipper_Right.sprite], pressed_a, pressed_d) #simulate the ball movement
 
+        #check if ball is in right startup ramp and allow spacebar there
+        if self.balls_Group.sprites()[0].rect.colliderect(pygame.rect.Rect(862,802,121,733)): 
+            if pygame.key.get_pressed()[pygame.K_SPACE]:
+                self.power += 0.05
 
-        #HACKATHON CHALLENGE 2
-        #Check here if Bobby has left the playing field and if he did go to the appropiate gamestate which tells us how good he feels (the score).
+            for event in self.lastButtons:
+                if event.type ==pygame.KEYUP and event.key== pygame.K_SPACE:
+                    if self.power>50:
+                        self.power=50
+                    self.balls_Group.sprites()[0].addImpulse(pygame.Vector2(0,-self.power))
+                    self.power =30 # initial power
+        
+            
 
 
         def hit_flipper():
@@ -253,7 +267,32 @@ class Game:
         self.render_Balls()
         self.render_Flipper()
         self.render_Score()
+        # for testing score self.score+=1
 
+        #DEBUG power push
+        #if pygame.key.get_pressed()[pygame.K_SPACE]:
+            #self.power += 0.05
+        #    self.power += 1
+
+        #for event in self.lastButtons:
+        #    if event.type ==pygame.KEYUP and event.key== pygame.K_SPACE:
+        #        if self.power>50:
+        #            self.power=50
+        #        self.balls_Group.sprites()[0].addImpulse(pygame.Vector2(0,-self.power))
+        #        self.power =12 # initial power
+        #end DEBUG power push
+
+        #checks if ball left playfield
+        if self.balls_Group.sprites()[0].position.y>1600/self.zoom_game_map:
+            self.ball_amount -= 1
+            # for testing print("-1")
+            if self.ball_amount==0:
+                self.gamestate = self.game_finished
+            else:
+                self.gamestate = self.ball_waiting
+        #restart game when ball left playing field
+        if self.balls_Group.sprites()[0].position.y<0:
+            self.gamestate = self.not_started
 
 
     def game_finished(self):
@@ -275,17 +314,41 @@ class Game:
         self.screen = self.draw_Text(self.screen, font, "white", text, (self.screen.get_width() / 2 - text_Size_Prompt[0] / 2,
                                                         self.screen.get_height() / 2 - text_Size_Prompt[1] / 2 + text_Size_Big[
                                                             1] + text_Size_Time[1] + 10))
-
-        # HACKATHON CHALLENGE 5
-        # Bobbys diary is luckily one of those which lead you through an entry by asking you questions, but when Bobby tries to write something his pen is empty!
-        # Use the pygame key functionalities to give him a way to type and have it shown on the screen. Bobby should be able to delete his inputs if he makes a typo.
-        # Bobby should not be able to write 2 names because that would only confuse him, so make sure to disallow pressing space.
-        # When pressed enter the name should be submitted and if Bobby is so happy he is under the top ten he should be placed accordingly in the list
-        # highscores from the Highscore manager. If in the top ten the game should go to the highscores list from the main menu (look at menu.py to understand the menu)
-        # and if not the entry should not be saved because Bobby's diary is very small and the game should go to the main menu.
-        # Hint: look at the game class attributes to understand where to get the keyboard keys and how the scene changes work 
         import Highscore_Manager
-        
+        Highscore_Manager.read_highscores()
+        # listen for text inputs
+        for pressedButton in self.lastButtons:
+            if pressedButton.type == pygame.KEYDOWN:
+                if pressedButton.key == pygame.K_BACKSPACE:
+                    # delete last character
+                    self.entered_Name = self.entered_Name[:-1]
+                elif pressedButton.key == pygame.K_RETURN:
+                    # save highscore if under top ten
+                    for i in range(len(Highscore_Manager.highscores)):
+
+                        if int(Highscore_Manager.highscores[i][1]) < self.score:
+                            place = i
+                            Highscore_Manager.highscores = Highscore_Manager.highscores[:place] + ["x"] + Highscore_Manager.highscores[
+                                                                    place:-1]  # leave last user out and put in placeholder for current user
+                            Highscore_Manager.highscores[place] = [self.entered_Name, str(self.score)]
+                            Highscore_Manager.write_highscores(Highscore_Manager.highscores)
+
+                            # go to highscores if you have a highscore
+                            self.current_Scene = self.highscore_menu
+                            self.music_Manager.Play_Music_In_Loop()
+                            Highscore_Manager.read_highscores()
+                            self.gamestate = self.not_started
+                            return
+                    #go to Main Menu when no Highscore
+                    self.current_Scene = self.main_menu
+                    self.music_Manager.Play_Music_In_Loop()
+                    self.gamestate = self.not_started
+                    return
+                elif pressedButton.key != pygame.K_SPACE:
+                    self.entered_Name += pressedButton.unicode
+
+        # write the written name
+
         
         #endregion
         

@@ -20,20 +20,19 @@ FPS = 60
 
 
 
-gearSetting = False
+gearSetting=False
 highscores = []
 def read_highscores():
     global highscores
     highscores.clear()
 
-    if not os.path.exists("highscores/"):
-        os.mkdir("highscores")
     #create new file if not already there
     if not os.path.exists("highscores/highscores.txt"):
-        
+        os.mkdir("highscores")
         with open("highscores/highscores.txt", "w") as f:
             for i in range(10):
                 f.write("x 999999999\n") #default line. Bad Time to allow for better scores
+
 
     with open("highscores/highscores.txt", "r") as f:
         arr = f.read().splitlines()
@@ -46,13 +45,15 @@ def write_highscores(highscores):
         for score in highscores:
             f.write(score[0] + " " +score[1] + "\n")
 
-
-
-#HACKATHON CHALLENGE 1
-#The watch of the timekeeper gets the time in miliseconds and shows it to the timekeeper as a string. 
+#converts the time from ms to a string
 def convert_Time(miliseconds):
-
-    return ""
+            seconds = miliseconds // 1000
+            miliseconds %= 1000
+            minutes = seconds // 60
+            seconds %= 60
+            hours = minutes // 60
+            minutes %= 60
+            return "{m:02d}:{s:02d}:{ms:02d}".format(h = hours,m = minutes, s = seconds, ms = miliseconds // 10)
 
 
 #the drawn game map
@@ -77,14 +78,14 @@ next_checkpoint = 0
 car = None
 car_tex = None
 #the ghost of the best player
-use_ghost = False #HACKATHON CHALLANGE 3.2: Enable when you want to test your simulated car. Go to other 3.2 to find implementation position
+use_ghost = True
 ghost_car = None
 ghost_tex = None
 
 
-
+#contains this information: [(tick,[actions]),(tick,[actions])]
 #action = pygame.event
-ghost_movements = [] #contains this information: [(tick,[actions]),(tick,[actions])]
+ghost_movements = []
 ghost_next_movement_index = 0 
 #has the ghost rode its path?
 ghost_finished = False
@@ -100,24 +101,45 @@ rpmmeter_Background_Scaled = None
 rpmmeter_Scale = 4 #1/scale
 rpmmeter_Needle_Scaled = None
 
-#HACKATHON CHALLENGE 3.1.1
-# You get the "temporal car aura" as a list of the form [(tick, [pygame.event])]
-# so for example:
-#[(1, event(type = keydown, key = w)), (3,event(type = keyup, key = w), ...)]
-#
-#look here to learn more about pygame events and how you get type and key: https://www.pygame.org/docs/ref/event.html
-#think about in which format you want to save the "aura" in a file
 def write_ghost_car(event_array_with_ticks):
+    with open("highscores/ghost.txt", "w") as f:
+        for tick, events in event_array_with_ticks:
+            if len(events) > 0:
+                f.write(str(tick))
+                for event in events:
+                    f.write(" " + str(event.type) + "," + str(event.key))
+                f.write("\n")
 
-    pass
 
-
-#HACKATHON CHALLENGE 3.1.2
-# read the "temporal car aura" from the file you saved it in in 3.1 and return it in the form [(tick, [pygame.event])]
+#reads the ghost movement out of highscores/ghost.txt and returns the ghost car file: [(tick,[actions]),(tick,[actions])]
 def read_ghost_car():
+    ghost_movements = []
+    ghost_data = []
+
+    #create a ghost file if there is none.
+    if not os.path.exists("highscores/ghost.txt"):
+        with open("highscores/ghost.txt", "w") as f:
+            pass #creates only the folder
 
 
-    return
+
+    with open("highscores/ghost.txt","r") as f:
+        ghost_data = f.read().splitlines()
+    for line in ghost_data:
+        ghost_movement = line.split(" ")
+        ghost_actions = []
+        for entry_index in range(len(ghost_movement)):
+            #file structure: tick keyup,w keydown,s ...
+            #seperate tick number from tuples. 0 is ticks
+            if entry_index == 0:
+                tick = ghost_movement[0]
+            else:
+                #splitting keydown,w in two parts. ghost action is tuple
+                ghost_action = ghost_movement[entry_index].split(",")
+                action_dict = { "key": int(ghost_action[1]) }
+                ghost_actions.append(pygame.event.Event(int(ghost_action[0]), action_dict))
+        ghost_movements.append((tick, ghost_actions))
+    return ghost_movements
         
 
 
@@ -138,7 +160,7 @@ final_time = 0
 init_Gamestate = None
 gamestate = None
 def game(screen, lastButtons):
-    global gamestate, init_Gamestate, _speed, _rpm, _gear, game_map, car, car_tex, zoom_game_map, tick_count, event_array_with_ticks
+    global gamestate, init_Gamestate, game_map, car, car_tex, zoom_game_map, tick_count, event_array_with_ticks
     #music_fadeout()
     #region utility functions
     def start_Timer(set = 0):
@@ -260,17 +282,41 @@ def game(screen, lastButtons):
     def drive_Ghost(screen,in_start_phase):
         global ghost_car,ghost_tex, ghost_movements, tick_count, ghost_next_movement_index, use_ghost, ghost_currently_pressed, ghost_finished
         if use_ghost:
-            current_tick_events = [] 
-            # HACKATHON CHALLENGE 3.2
-            # The crazy Doc wants you to implement a hologram. He already did a large part of the work and simulates the car in the machine. 
-            # You get the temporal aura in the variable ghost_movements, but the crazy Warp Speedington build his car simulator by 
-            # shrinking a normal car and placing it on a treadmill! So you need to translate the temporal aura so that the mini car can drive with it.
-            # For that you need in current_tick_events all things which are currently happening as a list of pygame events. For example shifting gear.
-            # In ghost_currently_pressed there needs to be a list which is of the form of pygame.key.get_pressed(), but with the values from the temporal aura
-            # instead of the current inputs. Be careful that the simulation behaves properly when the simulation has not started yet(in the timer). 
-            # You can test your simulated car by setting use_ghost = True at the other HACKATHON CHALLENGE 3.2   
+            current_tick_events = []
+            #check if ghosts needs to do something in current frame and ghost exists
+            if len(ghost_movements) > 0 and not ghost_finished and tick_count == int(ghost_movements[ghost_next_movement_index][0]):
+                #get the actions which happend in the current tick without the tick itself.Not allowed during .layout [event]
+                current_tick_events = ghost_movements[ghost_next_movement_index][1]
+                #update ghost_currently_pressed
+                for event in current_tick_events:
 
-            #Crazy Docs mini simulated car
+                    #DEBUG prints for ghost actions
+                    #print("[Ghost] " + str(tick_count) + " " + str(event.type) + " " + str(event.key) )
+                    #print(gear(ghost_car))
+                    #check if smaller than 500 because numpad uses bigger numbers but they are not in the list of pressed keys
+                    if event.key < 500:
+                        if event.type == pygame.KEYDOWN:
+                            ghost_currently_pressed[int(event.key)] = True
+                        elif event.type == pygame.KEYUP:
+                            ghost_currently_pressed[int(event.key)] = False
+                    
+                #set next tick on which something happens. only when there is something next
+                if ghost_next_movement_index < len(ghost_movements)-1:
+                    ghost_next_movement_index += 1
+                else:
+                    ghost_finished = True
+                    print("Ghost ready")
+            #check if car is in startuptimer. its only allowed to press w there
+            if in_start_phase:
+                #disallow s in startup
+                if ghost_currently_pressed[pygame.K_s]:
+                    array = [isPressed for isPressed in ghost_currently_pressed]
+                    array[pygame.K_s] = False
+                    ghost_currently_pressed = array
+                    print("drive backwards blocked")
+                #delete all current tick events because shifting is not allowed for the ghost
+                current_tick_events = []
+                    
             signals_ghost = handleCarEvents(ghost_car,current_tick_events,ghost_currently_pressed)
             friction(ghost_car, check_Ground(pos(ghost_car)))
             updateCar(ghost_car, signals_ghost, FPS)
@@ -610,7 +656,7 @@ def draw_Text(screen,font,color,text,position):
     return screen
 
 
-#region music and sounds
+#music and sounds
 pygame.mixer.set_num_channels(3)
 music_channel = pygame.mixer.Channel(0)
 sound1_channel = pygame.mixer.Channel(1)
@@ -657,26 +703,23 @@ play_music_in_loop()
 def music_fadeout():
     global music_channel
     music_channel.fadeout(8000)#1 sec fadeout
-#endregion
 
-#HACKATHON CHALLENGE 2
-#implement another option to change from manual to automatic and display the text in the options menu. Hint: use the car property "automatic" to prepare for the real implementation
-#To implement the automatic car itself go to car.py and ctrl+f HACKATHON CHALLENGE 2
+
+
 option_selected = 0
-option_choosable = ["Music volume up", "Music volume down", "Sound volume up", "Sound volume down","exit"]
+option_choosable = ["Music volume up", "Music volume down", "Sound volume up", "Sound volume down","Transmission type","exit"]
 def options(screen, lastButton):
     global option_selected, option_choosable, music_volume_100, sound_volume_100, current_scene, selected, general_volume, gearSetting
     draw_Text(screen, font_header,"white" ,"Options", (50,window_size[1]/12))
-    
     for i in lastButton:
         if i.type == pygame.KEYDOWN:
-            if i.key in (pygame.K_w, pygame.K_UP): #choose option further up
+            if i.key in (pygame.K_w, pygame.K_UP):
                 option_selected -= 1
                 play_selection()
-            elif i.key in (pygame.K_s, pygame.K_DOWN): #option option further down
+            elif i.key in (pygame.K_s, pygame.K_DOWN):
                 option_selected += 1
                 play_selection()
-            elif i.key == pygame.K_RETURN: #on option pressed
+            elif i.key == pygame.K_RETURN:
                 if option_selected == 0:
                     if music_volume_100 <= 90:
                         music_volume_100 += 10
@@ -690,6 +733,8 @@ def options(screen, lastButton):
                     if sound_volume_100 >= 10:
                         sound_volume_100 -= 10
                 elif option_selected == 4:
+                    gearSetting = not gearSetting
+                elif option_selected == 5:
                     option_selected = 0
                     current_scene = main_menu
                     selected = 0
@@ -699,9 +744,9 @@ def options(screen, lastButton):
     sound1_channel.set_volume(sound_volume_100 / 100 / general_volume)
     sound2_channel.set_volume(sound_volume_100 / 100 / general_volume)
 
-    option_selected %= len(option_choosable) #make options flip around when going down so first option is selected
+    option_selected %= len(option_choosable)
 
-    for i in range(len(option_choosable)): #draw all options on the screen
+    for i in range(len(option_choosable)):
         if i == option_selected:
             font_selectable.set_underline(True)
         if option_choosable[i] != "exit":
@@ -713,9 +758,10 @@ def options(screen, lastButton):
 
     draw_Text(screen, font_selectable, "white", str(music_volume_100) + "%", (window_size[0] - font_selectable.size(str(music_volume_100) + "%")[0] - 50,window_size[1]/5*2))
     draw_Text(screen, font_selectable, "white", str(sound_volume_100) + "%", (window_size[0] - font_selectable.size(str(sound_volume_100) + "%")[0] - 50,window_size[1]/5*2 +  + window_size[1]/10*2))
-    
-    
-    
+    if gearSetting==False:
+        draw_Text(screen,font_selectable,"white","manual",(window_size[0] - font_selectable.size("automatic")[0] - 50,window_size[1]/5*2 +  + window_size[1]/10*2+ +window_size[1]/15*2))
+    else:
+        draw_Text(screen,font_selectable,"white","automatic",(window_size[0] - font_selectable.size("automatic")[0] - 50,window_size[1]/5*2 +  + window_size[1]/10*2+ +window_size[1]/15*2))
     return screen
 
 
@@ -803,4 +849,3 @@ while True:
     clock.tick(FPS)
     tick_count += 1
     timer += 1000/FPS
-
